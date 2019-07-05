@@ -10,10 +10,10 @@
     <a asp-action="Create">Create New</a>
 </p>
 
-@using (Html.BeginForm("Upload", "Users", FormMethod.Post, new { enctype = "multipart/form-data" }))
+@using (Html.BeginForm("Upload", "DriveMapping", FormMethod.Post, new { enctype = "multipart/form-data" }))
 {
     <div class="upload_file">
-        <input type="file" id="fileUpload" name="fileUpload" style="float:left" /><input type="submit" value="Get User List" />
+        <input type="file" id="fileUpload" name="fileUpload" style="float:left" /><input type="submit" value="Get DriveMapping List" />
     </div>
 
     if (@ViewBag.ShowList)

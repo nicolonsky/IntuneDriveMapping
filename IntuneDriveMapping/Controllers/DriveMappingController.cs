@@ -11,7 +11,7 @@ namespace IntuneDriveMapping.Controllers
 {
     public class DriveMappingController : Controller
     {
-        // GET: Users  
+
         public ActionResult Index()
         {
             if (TempData["userData"] == null)
@@ -36,24 +36,33 @@ namespace IntuneDriveMapping.Controllers
                 if (file != null && file.Length > 0)
                 {
                     XmlDocument xmldoc = new XmlDocument();
+
                     xmldoc.Load(file.OpenReadStream());
-                    DriveMappingModel user;
-                    XmlNodeList usernodes = xmldoc.SelectNodes("gpo/User/ExtensionData/Extension/DriveMapSettings/Drive/Properties");
+
+                    XmlNamespaceManager nsmanager = new XmlNamespaceManager(xmldoc.NameTable);
+
+                    nsmanager.AddNamespace("q1", xmldoc.DocumentElement.NamespaceURI);
+                    nsmanager.AddNamespace("q2", "http://www.microsoft.com/GroupPolicy/Settings/DriveMaps");
+
+                    DriveMappingModel driveMapping;
+                    XmlNodeList usernodes = xmldoc.SelectNodes("q1:GPO/q1:User/q1:ExtensionData/q1:Extension/q2:DriveMapSettings/q2:Drive", nsmanager);
                     foreach (XmlNode usr in usernodes)
                     {
-                        user = new DriveMappingModel
-                        {
-                            Id = Convert.ToInt32(usr["id"].InnerText),
-                            Path = usr["path"].InnerText,
-                            DriveLetter = usr["letter"].InnerText,
-                            Label = usr["label"].InnerText
-                        };
+                        #pragma warning disable IDE0017 // Simplify object initialization
+                        driveMapping = new DriveMappingModel();
+                        #pragma warning restore IDE0017 // Simplify object initialization
 
-                        userList.Add(user);
+                        driveMapping.Id = 1;
+                        driveMapping.Path = usr["path"].InnerXml;
+                        driveMapping.DriveLetter = usr["letter"].InnerXml;
+                        driveMapping.Label = usr["label"].InnerXml;
+
+                        userList.Add(driveMapping);
                     }
+
                     TempData["userData"] = userList;
                 }
-                return RedirectToAction("DriveMapping");
+                return RedirectToAction("Index");
             }
             catch (Exception ex)
             {
