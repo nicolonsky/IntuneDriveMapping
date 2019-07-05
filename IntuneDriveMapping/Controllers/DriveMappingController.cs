@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Xml;
 using IntuneDriveMapping.Models;
 using System.Web;
+using Newtonsoft.Json;
 
 namespace IntuneDriveMapping.Controllers
 {
@@ -21,7 +22,9 @@ namespace IntuneDriveMapping.Controllers
             }
             else
             {
-                List<DriveMappingModel> lst = (List<DriveMappingModel>)TempData["userData"];
+
+                List<DriveMappingModel> lst = JsonConvert.DeserializeObject<List<DriveMappingModel>>(TempData["userData"].ToString());
+
                 ViewBag.ShowList = true;
                 return View(lst);
             }
@@ -31,7 +34,7 @@ namespace IntuneDriveMapping.Controllers
         {
             try
             {
-                List<DriveMappingModel> userList = new List<DriveMappingModel>();
+                List<DriveMappingModel> driveMappings = new List<DriveMappingModel>();
                 var file = Request.Form.Files[0];
                 if (file != null && file.Length > 0)
                 {
@@ -45,7 +48,7 @@ namespace IntuneDriveMapping.Controllers
                     nsmanager.AddNamespace("q2", "http://www.microsoft.com/GroupPolicy/Settings/DriveMaps");
 
                     DriveMappingModel driveMapping;
-                    XmlNodeList usernodes = xmldoc.SelectNodes("q1:GPO/q1:User/q1:ExtensionData/q1:Extension/q2:DriveMapSettings/q2:Drive", nsmanager);
+                    XmlNodeList usernodes = xmldoc.SelectNodes("q1:GPO/q1:User/q1:ExtensionData/q1:Extension/q2:DriveMapSettings/q2:Drive/q2:Properties", nsmanager);
                     foreach (XmlNode usr in usernodes)
                     {
                         #pragma warning disable IDE0017 // Simplify object initialization
@@ -53,14 +56,15 @@ namespace IntuneDriveMapping.Controllers
                         #pragma warning restore IDE0017 // Simplify object initialization
 
                         driveMapping.Id = 1;
-                        driveMapping.Path = usr["path"].InnerXml;
-                        driveMapping.DriveLetter = usr["letter"].InnerXml;
-                        driveMapping.Label = usr["label"].InnerXml;
+                        driveMapping.Path = usr.Attributes["path"].InnerXml;
+                        driveMapping.DriveLetter = usr.Attributes["letter"].InnerXml;
+                        driveMapping.Label = usr.Attributes["label"].InnerXml;
 
-                        userList.Add(driveMapping);
+                        driveMappings.Add(driveMapping);
                     }
 
-                    TempData["userData"] = userList;
+
+                    TempData["userData"] = JsonConvert.SerializeObject(driveMappings);
                 }
                 return RedirectToAction("Index");
             }
