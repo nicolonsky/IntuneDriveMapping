@@ -4,14 +4,19 @@
     ViewData["Title"] = "Index";
 }
 
-<h2>Index</h2>
-
+<h2> Convert GPP to MSIntune DriveMapping</h2>
 
 @using (Html.BeginForm("Upload", "DriveMapping", FormMethod.Post, new { enctype = "multipart/form-data" }))
 {
-    <div class="upload_file">
-        <input type="file" id="fileUpload" name="fileUpload" style="float:left" /><input type="submit" value="Get DriveMapping List" />
-    </div>
+<div class="upload_file">
+
+
+  <input type="file" id="fileUpload" name="fileUpload" style="float:left" />
+   
+  <input type="submit" class="btn btn-primary" value="Generate DriveMapping List"/>
+
+
+  </div>
 
     if (@ViewBag.ShowList)
     {

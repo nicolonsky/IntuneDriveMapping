@@ -44,16 +44,16 @@ namespace IntuneDriveMapping.Controllers
 
                     XmlNamespaceManager nsmanager = new XmlNamespaceManager(xmldoc.NameTable);
 
-                    nsmanager.AddNamespace("q1", xmldoc.DocumentElement.NamespaceURI);
+                    nsmanager.AddNamespace("q1", "http://www.microsoft.com/GroupPolicy/Settings");
                     nsmanager.AddNamespace("q2", "http://www.microsoft.com/GroupPolicy/Settings/DriveMaps");
 
                     DriveMappingModel driveMapping;
                     XmlNodeList usernodes = xmldoc.SelectNodes("q1:GPO/q1:User/q1:ExtensionData/q1:Extension/q2:DriveMapSettings/q2:Drive/q2:Properties", nsmanager);
                     foreach (XmlNode usr in usernodes)
                     {
-                        #pragma warning disable IDE0017 // Simplify object initialization
+#pragma warning disable IDE0017 // Simplify object initialization
                         driveMapping = new DriveMappingModel();
-                        #pragma warning restore IDE0017 // Simplify object initialization
+
 
                         driveMapping.Id = 1;
                         driveMapping.Path = usr.Attributes["path"].InnerXml;
@@ -63,15 +63,17 @@ namespace IntuneDriveMapping.Controllers
                         driveMappings.Add(driveMapping);
                     }
 
-
                     TempData["userData"] = JsonConvert.SerializeObject(driveMappings);
                 }
+               
                 return RedirectToAction("Index");
             }
             catch (Exception ex)
             {
                 var error = ex;
-                throw;
+                throw ex;
+
+
             }
         }
     }
