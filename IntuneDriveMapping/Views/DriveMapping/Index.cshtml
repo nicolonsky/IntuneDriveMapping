@@ -1,67 +1,132 @@
 ﻿@model IEnumerable<IntuneDriveMapping.Models.DriveMappingModel>
 
 @{
-    ViewData["Title"] = "Index";
+    ViewData["Title"] = "Generate Script";
 }
 
-<h2> Convert GPP to MSIntune DriveMapping</h2>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+<h2>Convert GPP to MSIntune DriveMapping</h2>
+
+<p>In order to convert your network drive mapping configuration perform the following steps:</p>
+<ol>
+    <li>Open the Group Policy Management console of your Active Directory environment</li>
+    <li>Locate the drive mapping configuration</li>
+    <li>Right-click the configuration and select export</li>
+    <li>Upload the configuration below</li>
+    <li>If required make adjustments</li>
+</ol>
 
 @using (Html.BeginForm("Upload", "DriveMapping", FormMethod.Post, new { enctype = "multipart/form-data" }))
 {
+
+    
+
 <div class="upload_file">
 
+            <h4>Upload your GPP drivemapping XML</h4>
 
-  <input type="file" id="fileUpload" name="fileUpload" style="float:left" />
-   
-  <input type="submit" class="btn btn-primary" value="Generate DriveMapping List"/>
+                <!-- COMPONENT START -->
+                <div class="form-group" style="float:left" >
+                    <div class="input-group input-file" name="Fichier1">
+                        <input type="text" class="form-control" id="fileUpload" name="fileUpload" placeholder='Choose a file...'  style="float:left" />
+                        <span class="input-group-btn">
+                            <button class="btn btn-default btn-choose" type="button">Choose</button>
+                        </span>
 
 
-  </div>
+                    </div>
+                </div>
+                <!-- COMPONENT END -->
 
-    if (@ViewBag.ShowList)
+                <script>
+                    function bs_input_file() {
+                        $(".input-file").before(
+                            function () {
+                                if (!$(this).prev().hasClass('input-ghost')) {
+                                    var element = $("<input type='file' class='input-ghost' style='visibility:hidden; height:0'>");
+                                    element.attr("name", $(this).attr("name"));
+                                    element.change(function () {
+                                        element.next(element).find('input').val((element.val()).split('\\').pop());
+                                    });
+                                    $(this).find("button.btn-choose").click(function () {
+                                        element.click();
+                                    });
+                                    $(this).find("button.btn-reset").click(function () {
+                                        element.val(null);
+                                        $(this).parents(".input-file").find('input').val('');
+                                    });
+                                    $(this).find('input').css("cursor", "pointer");
+                                    $(this).find('input').mousedown(function () {
+                                        $(this).parents('.input-file').prev().click();
+                                        return false;
+                                    });
+                                    return element;
+                                }
+                            }
+                        );
+                    }
+                    $(function () {
+                        bs_input_file();
+                    });
+
+                    document.getElementById("fileUpload").onchange = function () {
+                        document.getElementById("DriveMapping").submit();
+                    };
+
+                </script>
+
+
+    <input type="submit" class="btn btn-primary" value="Generate DriveMapping List" />
+
+</div>
+
+    if (ViewBag.Error != null)
     {
-    <table class="table">
-        <thead>
-            <tr>
-                <th>
-                    @Html.DisplayNameFor(model => model.Id)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Path)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.DriveLetter)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Label)
-                </th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
-            {
-                <tr>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Id)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Path)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.DriveLetter)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Label)
-                    </td>
-                    <td>
-                        @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
-                        @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
-                        @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+        <p class="text-danger">
+            @ViewBag.Error
+        </p>
     }
+    else if (@ViewBag.ShowList)
+    {
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Path)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.DriveLetter)
+                    </th>
+                    <th>
+                        @Html.DisplayNameFor(model => model.Label)
+                    </th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Path)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.DriveLetter)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Label)
+                        </td>
+                        <td>
+                            @Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |
+                            @Html.ActionLink("Details", "Details", new { /* id=item.PrimaryKey */ }) |
+                            @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
 }
