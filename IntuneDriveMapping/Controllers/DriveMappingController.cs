@@ -4,11 +4,13 @@ using Microsoft.AspNetCore.Mvc;
 using System.Xml;
 using IntuneDriveMapping.Models;
 using Newtonsoft.Json;
+using System.Linq;
 
 namespace IntuneDriveMapping.Controllers
 {
     public class DriveMappingController : Controller
     {
+        List<DriveMappingModel> driveMappings = new List<DriveMappingModel>();
 
         public ActionResult Index()
         {
@@ -36,7 +38,6 @@ namespace IntuneDriveMapping.Controllers
 
             try
             {
-                List<DriveMappingModel> driveMappings = new List<DriveMappingModel>();
                 var file = Request.Form.Files[0];
                 if (file != null && file.Length > 0)
                 {
@@ -95,34 +96,26 @@ namespace IntuneDriveMapping.Controllers
             {
                 ViewBag.Error = ex;
                 return View("Index");
+            }
+        }
 
+        public ActionResult Edit(string UID)
+        {
+            try
+            {
+                DriveMappingModel driveMappingEntry = driveMappings.Where(s => s.UID == UID).FirstOrDefault();
+
+                return View(driveMappingEntry);
 
             }
 
-        }
-
-        public ActionResult Edit(string UID, string Path, string DriveLetter, string Label)
-        {
-            //Get the student from studentList sample collection for demo purpose.
-            //Get the student from the database in the real application
-            //var std = studentList.Where(s => s.StudentId == Id).FirstOrDefault();
-
-            string identifier = UID;
-            string targetpath = Path;
-            string letter = DriveLetter;
-            string dexfription = Label;
-
-            DriveMappingModel driveMapping;
-
-            driveMapping = new DriveMappingModel
+            catch (Exception ex)
             {
-                Path = targetpath,
-                DriveLetter=letter,
-                Label=dexfription,
-                UID = identifier
-            };
-            
-            return View("Edit");
+                ViewBag.Error = ex;
+
+                return View("Index");
+
+            }
         }
     }
 }

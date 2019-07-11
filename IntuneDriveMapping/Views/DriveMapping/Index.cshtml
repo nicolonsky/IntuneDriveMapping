@@ -109,11 +109,7 @@
                         </td>
                         <td>
 
-                            <!--//linkText, actionName, controllerName, routeValues, htmlAttributes
-                            <%=Html.ActionLink("Details", "Details",
-                            "Product", new {id = item.ID}, null) %> -->
-
-                            @Html.ActionLink("Edit", "Edit", new { UID = item.UID, Path = item.Path, DriveLetter= item.DriveLetter, Label=item.Label }) |
+                            @Html.ActionLink("Edit", "Edit", new { UID = item.UID, Path=item.Path}) |
                             @Html.ActionLink("Delete", "Delete", new { /* id=item.PrimaryKey */ })
                         </td>
                     </tr>
