@@ -10,9 +10,11 @@ namespace IntuneDriveMapping.Controllers
     public class DriveMappingController : Controller
     {
 
-        
         public ActionResult Index()
         {
+
+            ViewBag.ShowList = true;
+
             if (TempData["driveMappingData"] == null)
             {
                 ViewBag.ShowList = false;
@@ -27,6 +29,7 @@ namespace IntuneDriveMapping.Controllers
                 return View(lst);
             }
         }
+
         [HttpPost]
         public ActionResult Upload()
         {
@@ -48,17 +51,33 @@ namespace IntuneDriveMapping.Controllers
 
                     DriveMappingModel driveMapping;
 
-                    XmlNodeList usernodes = xmldoc.SelectNodes("q1:GPO/q1:User/q1:ExtensionData/q1:Extension/q2:DriveMapSettings/q2:Drive/q2:Properties", nsmanager);
+                    XmlNodeList driveProperties = xmldoc.SelectNodes("q1:GPO/q1:User/q1:ExtensionData/q1:Extension/q2:DriveMapSettings/q2:Drive/q2:Properties", nsmanager);
 
-                    foreach (XmlNode usr in usernodes)
+                    XmlNodeList driveFilters= xmldoc.SelectNodes("q1:GPO/q1:User/q1:ExtensionData/q1:Extension/q2:DriveMapSettings/q2:Drive/q2:Filters/q2:FilterGroup", nsmanager);
+
+                    XmlNodeList drivePrimaryKey = xmldoc.SelectNodes("q1:GPO/q1:User/q1:ExtensionData/q1:Extension/q2:DriveMapSettings/q2:Drive", nsmanager);
+
+                    int i = 0;
+
+                    foreach (XmlNode property in driveProperties)
                     {
-                        driveMapping = new DriveMappingModel();
 
-                        driveMapping.Path = usr.Attributes["path"].InnerXml;
-                        driveMapping.DriveLetter = usr.Attributes["letter"].InnerXml;
-                        driveMapping.Label = usr.Attributes["label"].InnerXml;
+                        driveMapping = new DriveMappingModel
+                        {
+                            Path = property.Attributes["path"].InnerXml,
+                            DriveLetter = property.Attributes["letter"].InnerXml,
+                            Label = property.Attributes["label"].InnerXml,
+                            UID = drivePrimaryKey[i].Attributes["uid"].InnerText
+                        };
+
+                        /** if (driveFilters[i] != null && driveFilters[i].Attributes["identifier"].InnerText== drivePrimaryKey[i].Attributes["uid"].InnerText)
+                        {
+                            driveMapping.GroupFilter = driveFilters[i].Attributes["name"].InnerXml;
+                        } **/
 
                         driveMappings.Add(driveMapping);
+
+                        i++;
                     }
 
                     TempData["driveMappingData"] = JsonConvert.SerializeObject(driveMappings);
@@ -68,17 +87,42 @@ namespace IntuneDriveMapping.Controllers
             }
             catch (XmlException ex)
             {
-                ViewBag.Error = "XML parsing error occured. Make sure you uploaded a valid GPP XML! " + ex.Message;
+                ViewBag.Error = "XML parsing error occured. Make sure you uploaded a valid GPP XML! " + ex;
                 return View("Index");
 
             }
             catch (Exception ex)
             {
-                ViewBag.Error = ex.Message;
+                ViewBag.Error = ex;
                 return View("Index");
 
 
             }
+
+        }
+
+        public ActionResult Edit(string UID, string Path, string DriveLetter, string Label)
+        {
+            //Get the student from studentList sample collection for demo purpose.
+            //Get the student from the database in the real application
+            //var std = studentList.Where(s => s.StudentId == Id).FirstOrDefault();
+
+            string identifier = UID;
+            string targetpath = Path;
+            string letter = DriveLetter;
+            string dexfription = Label;
+
+            DriveMappingModel driveMapping;
+
+            driveMapping = new DriveMappingModel
+            {
+                Path = targetpath,
+                DriveLetter=letter,
+                Label=dexfription,
+                UID = identifier
+            };
+            
+            return View("Edit");
         }
     }
 }
