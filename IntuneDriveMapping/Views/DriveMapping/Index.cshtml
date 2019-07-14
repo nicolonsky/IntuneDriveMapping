@@ -9,7 +9,7 @@
 @using (Html.BeginForm("Upload", "DriveMapping", FormMethod.Post, new { enctype = "multipart/form-data" }))
 {
     <div class="upload_file">
-
+        <br />
         <h4>Upload your GPP drivemapping XML</h4>
 
         <!-- COMPONENT START -->
@@ -70,9 +70,7 @@
         <p class="text-danger">
             @ViewBag.Error
         </p>
-    }
-
-    if (@ViewBag.ShowList)
+    }else if (@ViewBag.ShowList)
     {
         <table class="table">
             <thead>

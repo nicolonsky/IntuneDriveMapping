@@ -28,9 +28,9 @@ namespace IntuneDriveMapping.Controllers
             {
                 ViewBag.ShowList = true;
 
-                List<DriveMappingModel> lst = JsonConvert.DeserializeObject<List<DriveMappingModel>>(HttpContext.Session.GetString(sessionName));
+                List<DriveMappingModel> driveMappings = JsonConvert.DeserializeObject<List<DriveMappingModel>>(HttpContext.Session.GetString(sessionName));
 
-                return View(lst);
+                return View(driveMappings);
 
             }
         }
@@ -112,9 +112,9 @@ namespace IntuneDriveMapping.Controllers
             
             try
             {
-                List<DriveMappingModel> lst = JsonConvert.DeserializeObject<List<DriveMappingModel>>(HttpContext.Session.GetString(sessionName));
+                List<DriveMappingModel> driveMappings = JsonConvert.DeserializeObject<List<DriveMappingModel>>(HttpContext.Session.GetString(sessionName));
 
-                var driveMappingEntry = lst.Where(s => s.id == id).FirstOrDefault();
+                var driveMappingEntry = driveMappings.Where(s => s.id == id).FirstOrDefault();
 
                 return View(driveMappingEntry);
 
@@ -135,10 +135,27 @@ namespace IntuneDriveMapping.Controllers
 
             try
             {
-                List<DriveMappingModel> lst = JsonConvert.DeserializeObject<List<DriveMappingModel>>(HttpContext.Session.GetString(sessionName));
 
 
-                lst[lst.FindIndex(ind => ind.Equals(driveMapping.id))] = driveMapping;
+                if (ModelState.IsValid)
+                {
+
+                    //haven't found better solution --> improvement needed!
+                    //so i just remove the existing entry and add the new one and do a resort of the list
+
+                    List<DriveMappingModel> driveMappings = JsonConvert.DeserializeObject<List<DriveMappingModel>>(HttpContext.Session.GetString(sessionName));
+
+                    driveMappings.RemoveAt(driveMapping.id - 1);
+
+                    driveMappings.Add(driveMapping);
+
+                    HttpContext.Session.SetString(sessionName, JsonConvert.SerializeObject(driveMappings.OrderBy(entry => entry.id)));
+                }
+                else
+                {
+                    return View();
+
+                }
 
                 return RedirectToAction("Index");
 
@@ -155,9 +172,9 @@ namespace IntuneDriveMapping.Controllers
 
         public ActionResult Delete(int? id)
         {
-            List<DriveMappingModel> lst = JsonConvert.DeserializeObject<List<DriveMappingModel>>(HttpContext.Session.GetString(sessionName));
+            List<DriveMappingModel> driveMappings = JsonConvert.DeserializeObject<List<DriveMappingModel>>(HttpContext.Session.GetString(sessionName));
 
-            var driveMappingEntry = lst.Where(s => s.id == id).FirstOrDefault();
+            var driveMappingEntry = driveMappings.Where(s => s.id == id).FirstOrDefault();
 
             return View(driveMappingEntry);
 
@@ -167,11 +184,13 @@ namespace IntuneDriveMapping.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Delete(int id)
         {
-            List<DriveMappingModel> lst = JsonConvert.DeserializeObject<List<DriveMappingModel>>(HttpContext.Session.GetString(sessionName));
+            List<DriveMappingModel> driveMappings = JsonConvert.DeserializeObject<List<DriveMappingModel>>(HttpContext.Session.GetString(sessionName));
 
-            var driveMappingEntry = lst.Where(s => s.id == id).FirstOrDefault();
+            var driveMappingEntry = driveMappings.Where(s => s.id == id).FirstOrDefault();
 
-            lst.Remove(driveMappingEntry);
+            driveMappings.Remove(driveMappingEntry);
+
+            HttpContext.Session.SetString(sessionName, JsonConvert.SerializeObject(driveMappings));
 
             return RedirectToAction("Index");
         }

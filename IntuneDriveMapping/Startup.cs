@@ -38,7 +38,7 @@ namespace IntuneDriveMapping
             services.AddDistributedMemoryCache();
 
             services.AddSession(options => {
-                options.IdleTimeout = TimeSpan.FromSeconds(10);//You can set Time   
+                options.IdleTimeout = TimeSpan.FromSeconds(30);//You can set Time   
                 options.Cookie.IsEssential = true; // make the session cookie Essential
             });
         }
