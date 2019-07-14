@@ -8,20 +8,32 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
 
 namespace IntuneDriveMapping.Controllers
 {
     public class DriveMappingController : Controller
     {
         const string sessionName = "driveMappingList";
+        const string errosSession = "lastError";
+        const string indexView = "Index";
 
         public ActionResult Index()
         {
             ViewBag.ShowList = false;
 
+            //check if error message is stored in session & forward to view
+            if(HttpContext.Session.GetString(errosSession) != null)
+            {
+                ViewBag.Error = HttpContext.Session.GetString(errosSession);
+
+                //clear session after returned to view
+                HttpContext.Session.Remove(errosSession);
+
+            }
+
             if (HttpContext.Session.GetString(sessionName)==null)
             {
-                ViewBag.Error = "Empty session" + sessionName;
                 return View();
             }
             else
@@ -38,14 +50,12 @@ namespace IntuneDriveMapping.Controllers
         [HttpPost]
         public ActionResult Upload()
         {
-
             try
             {
                 var file = Request.Form.Files[0];
 
                 if (file != null && file.Length > 0)
                 {
-
 
                     // create xmldoc
                     XmlDocument xmldoc = new XmlDocument();
@@ -91,40 +101,42 @@ namespace IntuneDriveMapping.Controllers
                     HttpContext.Session.SetString(sessionName, JsonConvert.SerializeObject(driveMappings));
 
                 }
-                return RedirectToAction("Index");
+
+                return RedirectToAction(indexView);
             }
 
-            catch (XmlException ex)
-            {
-                ViewBag.Error = "XML parsing error occured. Make sure you uploaded a valid GPP XML! " + ex;
-                return RedirectToAction("Index");
-
-            }
             catch (Exception ex)
             {
-                ViewBag.Error = ex;
-                return RedirectToAction("Index");
+                HttpContext.Session.SetString(errosSession, ex.ToString());
+
+                return RedirectToAction(indexView);
             }
         }
 
         public ActionResult Edit(int? id)
         {
-            
             try
             {
                 List<DriveMappingModel> driveMappings = JsonConvert.DeserializeObject<List<DriveMappingModel>>(HttpContext.Session.GetString(sessionName));
 
                 var driveMappingEntry = driveMappings.Where(s => s.id == id).FirstOrDefault();
 
-                return View(driveMappingEntry);
+                //prevent user passing invalid index by url
+                if (driveMappingEntry == null) {
 
+                    throw new NullReferenceException();
+                }
+                else
+                {
+                    return View(driveMappingEntry);
+                }
             }
 
             catch (Exception ex)
             {
-                ViewBag.Error = ex;
+                HttpContext.Session.SetString(errosSession,ex.ToString());
 
-                return RedirectToAction("Index");
+                return RedirectToAction(indexView);
 
             }
         }
@@ -135,7 +147,6 @@ namespace IntuneDriveMapping.Controllers
 
             try
             {
-
 
                 if (ModelState.IsValid)
                 {
@@ -157,15 +168,15 @@ namespace IntuneDriveMapping.Controllers
 
                 }
 
-                return RedirectToAction("Index");
+                return RedirectToAction(indexView);
 
             }
 
             catch (Exception ex)
             {
-                ViewBag.Error = ex;
+                HttpContext.Session.SetString(errosSession, ex.ToString());
 
-                return RedirectToAction("Index");
+                return RedirectToAction(indexView);
 
             }
         }
@@ -192,7 +203,20 @@ namespace IntuneDriveMapping.Controllers
 
             HttpContext.Session.SetString(sessionName, JsonConvert.SerializeObject(driveMappings));
 
-            return RedirectToAction("Index");
+            return RedirectToAction(indexView);
+        }
+
+        public ActionResult Download()
+        {
+
+            return File(Encoding.UTF8.GetBytes(HttpContext.Session.GetString(sessionName)),"application/json","drivemapping.json");
+        }
+
+        public ActionResult ResetSession()
+        {
+            HttpContext.Session.Clear();
+
+            return RedirectToAction(indexView);
         }
     }
 }

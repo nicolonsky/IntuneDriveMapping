@@ -1,33 +1,40 @@
 ﻿@{
-    ViewData["Title"] = "Start";
+    ViewData["Title"] = "";
 }
 
 <br />
-<h1>Welkom, Velkomin, Wilkommen, Welcome, Välkommen</h1>
+<h1 class="display-3">Welkom, Velkomin, Wilkommen, Welcome, Välkommen</h1>
+<p class="lead text-muted">Convert your network drive group policy to PowerShell and use it with Microsoft Intune. <br />Simple and easy. Without scripting effort.</p>
 <br />
-<p class="lead">Convert your existing Group Policy network drive mapping policy to a PowerShell script which can be used with Microsoft Intune.</p>
-
-
-<div class="container-fluid">
-    <div class="w-100"></div>
-
+<ol>
+    <li>
+        <p>Export your existing group policy configuration which contains the network drive configuration to an xml file</p>
+    </li>
+    <li>
+        <p>Upload the configuration in the <a href="/DriveMapping">intune-drive-mapping</a> converter and download your PowerShell script</p>
+    </li>
+    <li>
+        <p>Deploy the PowerShell script for your end users with Microsoft Intune</p>
+    </li>
+</ol>
+<br />
+<br />
+<div class="container-fluid" >
     <div class="row">
-        <div class="col-md-3">
-            <h4>new paths</h4>
-            <p>this is nicolonsy tech's first tool - so please be generous with my non existent developer skills</p>
+        <div class="col-md-4" >
+            <h4>Off to new paths.</h4>
+            <p>I wanted to try out something new. This is nicolonsy tech's first tool - so please be generous with my non existent developer skills</p>
+        </div>
+        <div class="col-md-4">
+            <h4>I &#10084; open source.</h4>
+            <p>That's the reason why this app is built on asp net core and you can <a href="https://github.com/nicolonsky/IntuneDriveMapping">find the entire source on GitHub</a></p>
 
         </div>
-        <div class="col-md-3">
-            <h4>i like open source &#10084;.</h4>
-            <p>that's the reason why this app relies on asp net core mvc and you can <a href="https://github.com/nicolonsky/IntuneDriveMapping">find this project on GitHub</a></p>
-
-        </div>
-        <div class="col-md-3">
-            <h4>i'm a blogger tho</h4>
-            <p>so better give my techblog a read. i blog about the modern workplace with focus on EMS</p>
+        <div class="col-md-4">
+            <h4>I'm a wannabe blogger.</h4>
+            <p><a href="https://tech.nicolonsky.ch" target="_blank">So better give my techblog a read</a>. I'm blogging about the modern workplace with focus on EM+S</p>
         </div>
     </div>
-
 </div>
 
 

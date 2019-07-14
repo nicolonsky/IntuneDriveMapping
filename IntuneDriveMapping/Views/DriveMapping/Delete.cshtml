@@ -1,15 +1,12 @@
 ﻿@model IntuneDriveMapping.Models.DriveMappingModel
 
 @{
-    ViewData["Title"] = "Delete";
+    ViewData["Title"] = "Delete-";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<h2>Delete</h2>
-
 <h3>Are you sure you want to delete this?</h3>
 <div>
-    <h4>DriveMappingModel</h4>
     <hr />
     <dl class="dl-horizontal">
         <dt>
@@ -29,18 +26,6 @@
         </dt>
         <dd>
             @Html.DisplayFor(model => model.Label)
-        </dd>
-        <dt>
-            @Html.DisplayNameFor(model => model.id)
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.id)
-        </dd>
-        <dt>
-            @Html.DisplayNameFor(model => model.GroupFilter)
-        </dt>
-        <dd>
-            @Html.DisplayFor(model => model.GroupFilter)
         </dd>
     </dl>
     

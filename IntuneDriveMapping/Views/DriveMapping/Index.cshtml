@@ -1,77 +1,82 @@
 ﻿@model IEnumerable<IntuneDriveMapping.Models.DriveMappingModel>
 
 @{
-    ViewData["Title"] = "Generate Script";
+    ViewData["Title"] = "intune-drive-mapping generator";
 }
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<br />
+<h2>intune-drive-mapping generator</h2>
 
 @using (Html.BeginForm("Upload", "DriveMapping", FormMethod.Post, new { enctype = "multipart/form-data" }))
 {
-    <div class="upload_file">
-        <br />
-        <h4>Upload your GPP drivemapping XML</h4>
 
-        <!-- COMPONENT START -->
-        <div class="form-group" style="float:left">
-            <div class="input-group input-file" name="fileuploader">
-                <input type="text" class="form-control" id="fileUpload" name="fileUpload" placeholder='Choose a file...' style="float:left" />
-                <span class="input-group-btn">
-                    <button class="btn btn-default btn-choose" type="button">Choose</button>
-                </span>
+    if (ViewBag.ShowList != true)
+    {
+        <div class="upload_file">
+            <h4 style="font-family: monospace;">Upload your exported group policy configuration</h4>
+
+            <div class="form-group" style="float:left">
+                <div class="input-group input-file" name="fileuploader">
+                    <input type="text" class="form-control" id="fileUpload" name="fileUpload" placeholder='Choose a file...' style="float:left" />
+                    <span class="input-group-btn">
+                        <button class="btn btn-default btn-choose" type="button">Choose</button>
+                    </span>
 
 
+                </div>
             </div>
-        </div>
-        <!-- COMPONENT END -->
 
-        <script>
-            function bs_input_file() {
-                $(".input-file").before(
-                    function () {
-                        if (!$(this).prev().hasClass('input-ghost')) {
-                            var element = $("<input type='file' class='input-ghost' style='visibility:hidden; height:0'>");
-                            element.attr("name", $(this).attr("name"));
-                            element.change(function () {
-                                element.next(element).find('input').val((element.val()).split('\\').pop());
-                            });
-                            $(this).find("button.btn-choose").click(function () {
-                                element.click();
-                            });
-                            $(this).find("button.btn-reset").click(function () {
-                                element.val(null);
-                                $(this).parents(".input-file").find('input').val('');
-                            });
-                            $(this).find('input').css("cursor", "pointer");
-                            $(this).find('input').mousedown(function () {
-                                $(this).parents('.input-file').prev().click();
-                                return false;
-                            });
-                            return element;
+
+            <script>
+                function bs_input_file() {
+                    $(".input-file").before(
+                        function () {
+                            if (!$(this).prev().hasClass('input-ghost')) {
+                                var element = $("<input type='file' class='input-ghost' accept='.xml' style='visibility:hidden; height:0'>");
+                                element.attr("name", $(this).attr("name"));
+                                element.change(function () {
+                                    element.next(element).find('input').val((element.val()).split('\\').pop());
+                                });
+                                $(this).find("button.btn-choose").click(function () {
+                                    element.click();
+                                });
+                                $(this).find("button.btn-reset").click(function () {
+                                    element.val(null);
+                                    $(this).parents(".input-file").find('input').val('');
+                                });
+                                $(this).find('input').css("cursor", "pointer");
+                                $(this).find('input').mousedown(function () {
+                                    $(this).parents('.input-file').prev().click();
+                                    return false;
+                                });
+                                return element;
+                            }
                         }
-                    }
-                );
-            }
-            $(function () {
-                bs_input_file();
-            });
+                    );
+                }
+                $(function () {
+                    bs_input_file();
+                });
 
-            document.getElementById("fileUpload").onchange = function () {
-                document.getElementById("DriveMapping").submit();
-            };
+            </script>
+            <input type="submit" class="btn btn-primary" value="Upload" />
+        </div>
+    }
 
-        </script>
-
-        <input type="submit" class="btn btn-primary" value="Generate DriveMapping List" />
-    </div>
 
     if (ViewBag.Error != null)
     {
-        <p class="text-danger">
+        <br />
+        <div class="alert alert-danger" role="alert">
             @ViewBag.Error
-        </p>
-    }else if (@ViewBag.ShowList)
+        </div>
+    }
+
+   if (@ViewBag.ShowList)
     {
+        <h4 style="font-family: monospace;">Change your drivemapping configuration if needed</h4>
+        <br />
         <table class="table">
             <thead>
                 <tr>
@@ -83,9 +88,6 @@
                     </th>
                     <th>
                         @Html.DisplayNameFor(model => model.Label)
-                    </th>
-                    <th>
-                        @Html.DisplayNameFor(model => model.GroupFilter)
                     </th>
                     <th></th>
                 </tr>
@@ -104,9 +106,6 @@
                             @Html.DisplayFor(modelItem => item.Label)
                         </td>
                         <td>
-                            @Html.DisplayFor(modelItem => item.GroupFilter)
-                        </td>
-                        <td>
                             @Html.ActionLink("Edit", "Edit", new { id = item.id })|
                             @Html.ActionLink("Delete", "Delete", new { id = item.id })
                         </td>
@@ -114,5 +113,10 @@
                 }
             </tbody>
         </table>
+        <br />
+
+        <input type="button" class="btn btn-primary" value="Download PowerShell script" onclick="location.href='@Url.Action("Download", "DriveMapping")'" />
+        <input type="button" class="btn btn-danger" value="Start over" onclick="location.href='@Url.Action("ResetSession", "DriveMapping")'" />
+
     }
 }
