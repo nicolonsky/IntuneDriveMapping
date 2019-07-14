@@ -1,33 +1,24 @@
 ﻿@model IEnumerable<IntuneDriveMapping.Models.DriveMappingModel>
-
 @{
     ViewData["Title"] = "intune-drive-mapping generator-";
 }
-
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
 <br />
 <h2>intune-drive-mapping generator</h2>
-
 @using (Html.BeginForm("Upload", "DriveMapping", FormMethod.Post, new { enctype = "multipart/form-data" }))
 {
-
     if (ViewBag.ShowList != true)
     {
         <div class="upload_file">
             <h4 style="font-family: monospace;">Upload your exported group policy configuration</h4>
-
             <div class="form-group" style="float:left">
                 <div class="input-group input-file" name="fileuploader">
                     <input type="text" class="form-control" id="fileUpload" name="fileUpload" placeholder='Choose a file...' style="float:left" />
                     <span class="input-group-btn">
                         <button class="btn btn-default btn-choose" type="button">Choose</button>
                     </span>
-
-
                 </div>
             </div>
-
-
             <script>
                 function bs_input_file() {
                     $(".input-file").before(
@@ -58,13 +49,10 @@
                 $(function () {
                     bs_input_file();
                 });
-
             </script>
             <input type="submit" class="btn btn-primary" value="Upload" />
         </div>
     }
-
-
     if (ViewBag.Error != null)
     {
         <br />
@@ -72,7 +60,6 @@
             @ViewBag.Error
         </div>
     }
-
    if (@ViewBag.ShowList)
     {
         <h4 style="font-family: monospace;">Change your drivemapping configuration if needed</h4>
@@ -114,9 +101,7 @@
             </tbody>
         </table>
         <br />
-
         <input type="button" class="btn btn-primary" value="Download PowerShell script" onclick="location.href='@Url.Action("Download", "DriveMapping")'" />
         <input type="button" class="btn btn-danger" value="Start over" onclick="location.href='@Url.Action("ResetSession", "DriveMapping")'" />
-
     }
 }
