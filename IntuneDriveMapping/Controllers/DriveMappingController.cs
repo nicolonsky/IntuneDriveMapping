@@ -257,13 +257,20 @@ namespace IntuneDriveMapping.Controllers
         {
             try
             {
-                string poshTemplate = System.IO.File.ReadAllText(@"wwwroot/bin/"+poshTemplateName);
 
-                poshTemplate=poshTemplate.Replace(poshInsertString, HttpContext.Session.GetString(sessionName));
+                if (HttpContext.Session.GetString(sessionName)!=null && HttpContext.Session.GetString(adDomainName)!=null)
+                {
+                    string poshTemplate = System.IO.File.ReadAllText(@"wwwroot/bin/" + poshTemplateName);
 
-                poshTemplate = poshTemplate.Replace(poshAdInsertString, HttpContext.Session.GetString(adDomainName));
+                    poshTemplate = poshTemplate.Replace(poshInsertString, HttpContext.Session.GetString(sessionName));
 
-                return File(Encoding.UTF8.GetBytes(poshTemplate),"default/text", poshExportName);
+                    poshTemplate = poshTemplate.Replace(poshAdInsertString, HttpContext.Session.GetString(adDomainName));
+
+                    return File(Encoding.UTF8.GetBytes(poshTemplate), "default/text", poshExportName);
+                }else
+                {
+                    throw new Exception("No session data found, Session might have expired");
+                }
 
             }
             catch (Exception ex)
