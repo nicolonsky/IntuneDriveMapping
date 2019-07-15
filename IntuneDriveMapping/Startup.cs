@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
+using IntuneDriveMapping.Models;
 
 namespace IntuneDriveMapping
 {
@@ -41,6 +43,9 @@ namespace IntuneDriveMapping
                 options.IdleTimeout = TimeSpan.FromSeconds(30);//You can set Time   
                 options.Cookie.IsEssential = true; // make the session cookie Essential
             });
+
+            services.AddDbContext<IntuneDriveMappingContext>(options =>
+                    options.UseSqlServer(Configuration.GetConnectionString("IntuneDriveMappingContext")));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

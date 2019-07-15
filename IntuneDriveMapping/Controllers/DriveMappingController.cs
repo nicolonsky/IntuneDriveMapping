@@ -16,7 +16,15 @@ namespace IntuneDriveMapping.Controllers
     {
         const string sessionName = "driveMappingList";
         const string errosSession = "lastError";
+        const string adDomainName = "domainName";
+
         const string indexView = "Index";
+
+        const string poshInsertString = "!INTUNEDRIVEMAPPINGJSON!";
+        const string poshAdInsertString = "!INTUNEDRIVEMAPPINGADDSNAME!";
+        const string poshTemplateName = "IntuneDriveMappingTemplate.ps1";
+        const string poshExportName = "DriveMapping.ps1";
+
 
         public ActionResult Index()
         {
@@ -67,12 +75,16 @@ namespace IntuneDriveMapping.Controllers
 
                     nsmanager.AddNamespace("q1", "http://www.microsoft.com/GroupPolicy/Settings");
                     nsmanager.AddNamespace("q2", "http://www.microsoft.com/GroupPolicy/Settings/DriveMaps");
+                    nsmanager.AddNamespace("q3", "http://www.microsoft.com/GroupPolicy/Types");
 
                     XmlNodeList driveProperties = xmldoc.SelectNodes("q1:GPO/q1:User/q1:ExtensionData/q1:Extension/q2:DriveMapSettings/q2:Drive", nsmanager);
 
+                    string domainName = xmldoc.SelectSingleNode("q1:GPO/q1:Identifier/q3:Domain", nsmanager).InnerXml;
+
+                    HttpContext.Session.SetString(adDomainName,domainName);
 
                     //create list to store all entries
-                    List<DriveMappingModel> driveMappings = new List<DriveMappingModel>();
+                    List <DriveMappingModel> driveMappings = new List<DriveMappingModel>();
 
                     DriveMappingModel driveMapping;
 
@@ -88,7 +100,7 @@ namespace IntuneDriveMapping.Controllers
                             Path = property.ChildNodes[1].Attributes["path"].InnerXml,
                             DriveLetter = property.ChildNodes[1].Attributes["letter"].InnerXml,
                             Label = property.ChildNodes[1].Attributes["label"].InnerXml,
-                            Identifier = (i + 1)
+                            Id = (i + 1)
                         };
 
                         //check if we have a filter applied as child node --> index 2
@@ -97,7 +109,9 @@ namespace IntuneDriveMapping.Controllers
 
                             string groupFilter= property.ChildNodes[2].ChildNodes[0].Attributes["name"].InnerXml;
 
-                            driveMapping.GroupFilter = groupFilter;
+                            String[] streamlinedGroupFilter = groupFilter.Split('\\');
+
+                            driveMapping.GroupFilter = streamlinedGroupFilter[1];
                         }
                         catch
                         {
@@ -125,13 +139,13 @@ namespace IntuneDriveMapping.Controllers
             }
         }
 
-        public ActionResult Edit(int? id)
+        public ActionResult Edit(int? Id)
         {
             try
             {
                 List<DriveMappingModel> driveMappings = JsonConvert.DeserializeObject<List<DriveMappingModel>>(HttpContext.Session.GetString(sessionName));
 
-                var driveMappingEntry = driveMappings.Where(s => s.Identifier == id).FirstOrDefault();
+                var driveMappingEntry = driveMappings.Where(s => s.Id == Id).FirstOrDefault();
 
                 //prevent user passing invalid index by url
                 if (driveMappingEntry == null) {
@@ -168,11 +182,11 @@ namespace IntuneDriveMapping.Controllers
 
                     List<DriveMappingModel> driveMappings = JsonConvert.DeserializeObject<List<DriveMappingModel>>(HttpContext.Session.GetString(sessionName));
 
-                    driveMappings.RemoveAt(driveMapping.Identifier - 1);
+                    driveMappings.RemoveAt(driveMapping.Id - 1);
 
                     driveMappings.Add(driveMapping);
 
-                    HttpContext.Session.SetString(sessionName, JsonConvert.SerializeObject(driveMappings.OrderBy(entry => entry.Identifier)));
+                    HttpContext.Session.SetString(sessionName, JsonConvert.SerializeObject(driveMappings.OrderBy(entry => entry.Id)));
                 }
                 else
                 {
@@ -193,13 +207,13 @@ namespace IntuneDriveMapping.Controllers
             }
         }
 
-        public ActionResult Delete(int? id)
+        public ActionResult Delete(int? Id)
         {
             try
             {
                 List<DriveMappingModel> driveMappings = JsonConvert.DeserializeObject<List<DriveMappingModel>>(HttpContext.Session.GetString(sessionName));
 
-                var driveMappingEntry = driveMappings.Where(s => s.Identifier == id).FirstOrDefault();
+                var driveMappingEntry = driveMappings.Where(s => s.Id == Id).FirstOrDefault();
 
                 return View(driveMappingEntry);
 
@@ -215,13 +229,13 @@ namespace IntuneDriveMapping.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id)
+        public ActionResult Delete(int Id)
         {
             try
             {
                 List<DriveMappingModel> driveMappings = JsonConvert.DeserializeObject<List<DriveMappingModel>>(HttpContext.Session.GetString(sessionName));
 
-                var driveMappingEntry = driveMappings.Where(s => s.Identifier == id).FirstOrDefault();
+                var driveMappingEntry = driveMappings.Where(s => s.Id == Id).FirstOrDefault();
 
                 driveMappings.Remove(driveMappingEntry);
 
@@ -243,15 +257,14 @@ namespace IntuneDriveMapping.Controllers
         {
             try
             {
-                //string poshTemplate = PhysicalFile(@"wwwroot/bin/IntuneDriveMappingTemplate.ps1","default/text").ToString();
+                string poshTemplate = System.IO.File.ReadAllText(@"wwwroot/bin/"+poshTemplateName);
 
+                poshTemplate=poshTemplate.Replace(poshInsertString, HttpContext.Session.GetString(sessionName));
 
-                // poshTemplate.Replace("!INTUNEDRIVEMAPPINGJSON!", HttpContext.Session.GetString(sessionName));
+                poshTemplate = poshTemplate.Replace(poshAdInsertString, HttpContext.Session.GetString(adDomainName));
 
+                return File(Encoding.UTF8.GetBytes(poshTemplate),"default/text", poshExportName);
 
-                // return File(Encoding.UTF8.GetBytes(poshTemplate),"default/text","drivemapping.ps1");
-
-               return RedirectToAction(indexView);
             }
             catch (Exception ex)
             {

@@ -18,7 +18,8 @@ namespace IntuneDriveMapping.Models
         public string DriveLetter { get; set; }
         [Display(Name = "Display Name")]
         public string Label { get; set; }
-        public int Identifier { get; set; }
+        [Key]
+        public int Id { get; set; }
         [Display(Name = "Security Group Filter")]
         public string GroupFilter { get; set; }
     }
