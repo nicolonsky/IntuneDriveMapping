@@ -133,7 +133,7 @@ namespace IntuneDriveMapping.Controllers
 
             catch (Exception ex)
             {
-                HttpContext.Session.SetString(errosSession, ex.ToString());
+                HttpContext.Session.SetString(errosSession, ex.Message.ToString());
 
                 return RedirectToAction(indexView);
             }
@@ -160,7 +160,7 @@ namespace IntuneDriveMapping.Controllers
 
             catch (Exception ex)
             {
-                HttpContext.Session.SetString(errosSession,ex.ToString());
+                HttpContext.Session.SetString(errosSession,ex.Message.ToString());
 
                 return RedirectToAction(indexView);
 
@@ -200,7 +200,7 @@ namespace IntuneDriveMapping.Controllers
 
             catch (Exception ex)
             {
-                HttpContext.Session.SetString(errosSession, ex.ToString());
+                HttpContext.Session.SetString(errosSession, ex.Message.ToString());
 
                 return RedirectToAction(indexView);
 
@@ -220,7 +220,7 @@ namespace IntuneDriveMapping.Controllers
             }
             catch (Exception ex)
             {
-                HttpContext.Session.SetString(errosSession, ex.ToString());
+                HttpContext.Session.SetString(errosSession, ex.Message.ToString());
 
                 return RedirectToAction(indexView);
 
@@ -245,7 +245,7 @@ namespace IntuneDriveMapping.Controllers
             }
             catch (Exception ex)
             {
-                HttpContext.Session.SetString(errosSession, ex.ToString());
+                HttpContext.Session.SetString(errosSession, ex.Message.ToString());
 
                 return RedirectToAction(indexView);
 
@@ -268,7 +268,7 @@ namespace IntuneDriveMapping.Controllers
             }
             catch (Exception ex)
             {
-                HttpContext.Session.SetString(errosSession, ex.ToString());
+                HttpContext.Session.SetString(errosSession, ex.Message.ToString());
 
                 return RedirectToAction(indexView);
 
@@ -286,7 +286,7 @@ namespace IntuneDriveMapping.Controllers
             }
             catch (Exception ex)
             {
-                HttpContext.Session.SetString(errosSession, ex.ToString());
+                HttpContext.Session.SetString(errosSession, ex.Message.ToString());
 
                 return RedirectToAction(indexView);
 
