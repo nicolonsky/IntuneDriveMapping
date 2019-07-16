@@ -339,7 +339,7 @@ namespace IntuneDriveMapping.Controllers
             try
             {
 
-                if (HttpContext.Session.GetString(sessionName)!=null && HttpContext.Session.GetString(adDomainName)!=null)
+                if (HttpContext.Session.GetString(sessionName)!=null)
                 {
                     string poshTemplate = System.IO.File.ReadAllText(@"wwwroot/bin/" + poshTemplateName);
 
@@ -350,7 +350,7 @@ namespace IntuneDriveMapping.Controllers
                     return File(Encoding.UTF8.GetBytes(poshTemplate), "default/text", poshExportName);
                 }else
                 {
-                    throw new Exception("No session data found, Session might have expired");
+                    throw new Exception("No session data found, session might have expired");
                 }
 
             }
