@@ -26,12 +26,28 @@ namespace IntuneDriveMapping.Controllers
         const string poshExportName = "DriveMapping.ps1";
 
 
+        
         public ActionResult Index()
         {
             ViewBag.ShowList = false;
 
+            //get version
+            try
+            {
+                Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
+                DateTime buildDate = new DateTime(2000, 1, 1).AddDays(version.Build).AddSeconds(version.Revision * 2);
+                string displayableVersion = $"{@version} ({@buildDate})";
+
+                ViewBag.Version = displayableVersion;
+            }
+            catch
+            {
+                //SunFunNothingTodo
+            }
+
+
             //check if error message is stored in session & forward to view
-            if(HttpContext.Session.GetString(errosSession) != null)
+            if (HttpContext.Session.GetString(errosSession) != null)
             {
                 ViewBag.Error = HttpContext.Session.GetString(errosSession);
 
@@ -53,6 +69,63 @@ namespace IntuneDriveMapping.Controllers
                 return View(driveMappings);
 
             }
+        }
+
+         public ActionResult Create()
+        {
+
+            return View();
+
+        }
+
+        [HttpPost]
+        public ActionResult Create(DriveMappingModel driveMapping)
+        {
+
+            try
+            {
+
+                if (ModelState.IsValid)
+                {
+
+                    //check if first ever item is addedd or list with entries already exists
+                    if (HttpContext.Session.GetString(sessionName) != null)
+                    {
+                        List<DriveMappingModel> driveMappings = JsonConvert.DeserializeObject<List<DriveMappingModel>>(HttpContext.Session.GetString(sessionName));
+
+                        driveMapping.Id = driveMappings.Last().Id + 1;
+
+                        driveMappings.Add(driveMapping);
+
+                        HttpContext.Session.SetString(sessionName, JsonConvert.SerializeObject(driveMappings.OrderBy(entry => entry.Id)));
+                    }
+                    else
+                    {
+                        List<DriveMappingModel> driveMappings = new List<DriveMappingModel>();
+
+                        driveMappings.Add(driveMapping);
+
+                        HttpContext.Session.SetString(sessionName, JsonConvert.SerializeObject(driveMappings.OrderBy(entry => entry.Id)));
+                    }
+                }
+                else
+                {
+                    return View();
+
+                }
+
+                return RedirectToAction(indexView);
+
+            }
+
+            catch (Exception ex)
+            {
+                HttpContext.Session.SetString(errosSession, ex.Message.ToString());
+
+                return RedirectToAction(indexView);
+
+            }
+
         }
 
         [HttpPost]
@@ -215,7 +288,15 @@ namespace IntuneDriveMapping.Controllers
 
                 var driveMappingEntry = driveMappings.Where(s => s.Id == Id).FirstOrDefault();
 
-                return View(driveMappingEntry);
+                if (driveMappingEntry == null)
+                {
+
+                    throw new NullReferenceException();
+                }
+                else
+                {
+                    return View(driveMappingEntry);
+                }
 
             }
             catch (Exception ex)
