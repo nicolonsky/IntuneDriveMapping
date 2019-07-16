@@ -21,7 +21,6 @@ namespace IntuneDriveMapping.Controllers
         const string indexView = "Index";
 
         const string poshInsertString = "!INTUNEDRIVEMAPPINGJSON!";
-        const string poshAdInsertString = "!INTUNEDRIVEMAPPINGADDSNAME!";
         const string poshTemplateName = "IntuneDriveMappingTemplate.ps1";
         const string poshExportName = "DriveMapping.ps1";
 
@@ -36,7 +35,7 @@ namespace IntuneDriveMapping.Controllers
             {
                 Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
                 DateTime buildDate = new DateTime(2000, 1, 1).AddDays(version.Build).AddSeconds(version.Revision * 2);
-                string displayableVersion = $"{@version} ({@buildDate})";
+                string displayableVersion = $"{version} ({buildDate})";
 
                 ViewBag.Version = displayableVersion;
             }
@@ -148,13 +147,8 @@ namespace IntuneDriveMapping.Controllers
 
                     nsmanager.AddNamespace("q1", "http://www.microsoft.com/GroupPolicy/Settings");
                     nsmanager.AddNamespace("q2", "http://www.microsoft.com/GroupPolicy/Settings/DriveMaps");
-                    nsmanager.AddNamespace("q3", "http://www.microsoft.com/GroupPolicy/Types");
 
                     XmlNodeList driveProperties = xmldoc.SelectNodes("q1:GPO/q1:User/q1:ExtensionData/q1:Extension/q2:DriveMapSettings/q2:Drive", nsmanager);
-
-                    string domainName = xmldoc.SelectSingleNode("q1:GPO/q1:Identifier/q3:Domain", nsmanager).InnerXml;
-
-                    HttpContext.Session.SetString(adDomainName,domainName);
 
                     //create list to store all entries
                     List <DriveMappingModel> driveMappings = new List<DriveMappingModel>();
@@ -344,8 +338,6 @@ namespace IntuneDriveMapping.Controllers
                     string poshTemplate = System.IO.File.ReadAllText(@"wwwroot/bin/" + poshTemplateName);
 
                     poshTemplate = poshTemplate.Replace(poshInsertString, HttpContext.Session.GetString(sessionName));
-
-                    poshTemplate = poshTemplate.Replace(poshAdInsertString, HttpContext.Session.GetString(adDomainName));
 
                     return File(Encoding.UTF8.GetBytes(poshTemplate), "default/text", poshExportName);
                 }else
