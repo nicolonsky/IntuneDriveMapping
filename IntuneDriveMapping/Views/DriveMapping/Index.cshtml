@@ -19,7 +19,7 @@
             {
                 <br />
                 <div class="alert alert-danger alert-dismissible" role="alert">
-                  <strong>Error: </strong>@ViewBag.Error
+                    <strong>Error: </strong>@ViewBag.Error
                     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -64,6 +64,7 @@
                     bs_input_file();
                 });
 
+
 /**/</script>
             <input type="submit" class="btn btn-primary" value="Upload" />
             <input type="button" class="btn btn-success" value="Build from scratch" onclick="location.href='@Url.Action("Create", "DriveMapping")'" />
@@ -82,6 +83,21 @@
                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
+            </div>
+        }
+
+        if (ViewBag.AADConfig == true)
+        {
+            <br />
+            <div class="alert alert-warning alert-dismissible" role="alert">
+                <h4 class="alert-heading">Additional configuration is required</h4>
+                In order to apply the group filter for your end-users you need to create an Azure AD app registration. <a href="#" target="_blank">See documentation for additonal details</a>.
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                <br />
+                <br />
+                <input type="button" class="btn btn-default" value="Add configuration" onclick="location.href='@Url.Action("AzureAppRegistration", "DriveMapping")'" />
             </div>
         }
         <br />

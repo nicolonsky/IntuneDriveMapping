@@ -14,22 +14,27 @@ namespace IntuneDriveMapping.Controllers
 {
     public class DriveMappingController : Controller
     {
+        //Htp session configs
         const string sessionName = "driveMappingList";
         const string errosSession = "lastError";
-        const string adDomainName = "domainName";
+        const string aadAppRegSession = "appReg";
 
-        const string indexView = "Index";
-
+        //Configuration params for the generated PowerShell script
         const string poshInsertString = "!INTUNEDRIVEMAPPINGJSON!";
+        const string aadAppRegInsertString = "INTUNEDRIVEMAPPINGAPPREGJSON!";
         const string poshTemplateName = "IntuneDriveMappingTemplate.ps1";
         const string poshExportName = "DriveMapping.ps1";
 
+        //default view where everything comes together
+        const string indexView = "Index";
 
-        
+
         public ActionResult Index()
         {
+            //don't display any table data if no content is available
             ViewBag.ShowList = false;
 
+            
             //get version
             try
             {
@@ -55,19 +60,32 @@ namespace IntuneDriveMapping.Controllers
 
             }
 
+
+            //check if a drivemapping list exists and display it
             if (HttpContext.Session.GetString(sessionName)==null)
             {
                 return View();
             }
-            else
+
+            else 
             {
+                
+                List<DriveMappingModel> driveMappings = JsonConvert.DeserializeObject<List<DriveMappingModel>>(HttpContext.Session.GetString(sessionName));
+
                 ViewBag.ShowList = true;
 
-                List<DriveMappingModel> driveMappings = JsonConvert.DeserializeObject<List<DriveMappingModel>>(HttpContext.Session.GetString(sessionName));
+                //if item level targeting is configured for any entry we want to display a hint if no aad app config exists
+                if (driveMappings.Any(p => p.GroupFilter != null && (HttpContext.Session.GetString(aadAppRegSession) == null)))
+                {
+
+                    ViewBag.AADConfig = true;
+
+                }
 
                 return View(driveMappings);
 
             }
+
         }
 
          public ActionResult Create()
@@ -125,6 +143,50 @@ namespace IntuneDriveMapping.Controllers
 
             }
 
+        }
+
+        public ActionResult AzureAppRegistration()
+        {
+
+            return View();
+
+        }
+
+        [HttpPost]
+        public ActionResult AzureAppRegistration(AadAppRegistration AadAppReg)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    //check if first ever item is addedd or list with entries already exists
+                    if (HttpContext.Session.GetString(aadAppRegSession) != null)
+                    {
+                        //Existing entry will be overwritten
+                    }
+                    else
+                    {
+
+                        HttpContext.Session.SetString(aadAppRegSession, JsonConvert.SerializeObject(AadAppReg));
+
+                        
+                    }
+
+                    return RedirectToAction(indexView);
+                }
+                else
+                {
+                    return View();
+
+                }
+            }
+            catch (Exception ex)
+            {
+                HttpContext.Session.SetString(errosSession, ex.Message.ToString());
+
+                return RedirectToAction(indexView);
+
+            }
         }
 
         [HttpPost]
@@ -335,11 +397,19 @@ namespace IntuneDriveMapping.Controllers
 
                 if (HttpContext.Session.GetString(sessionName)!=null)
                 {
+
+                    //load the PowerShell template and replace values with generated configuration
+
                     string poshTemplate = System.IO.File.ReadAllText(@"wwwroot/bin/" + poshTemplateName);
 
                     poshTemplate = poshTemplate.Replace(poshInsertString, HttpContext.Session.GetString(sessionName));
 
+                    poshTemplate = poshTemplate.Replace(aadAppRegInsertString, HttpContext.Session.GetString(aadAppRegSession));
+
+
+                    //return file download
                     return File(Encoding.UTF8.GetBytes(poshTemplate), "default/text", poshExportName);
+
                 }else
                 {
                     throw new Exception("No session data found, session might have expired");

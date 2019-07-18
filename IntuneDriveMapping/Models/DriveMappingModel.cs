@@ -23,4 +23,21 @@ namespace IntuneDriveMapping.Models
         [Display(Name = "Security Group Filter")]
         public string GroupFilter { get; set; }
     }
+
+    public class AadAppRegistration
+    {
+        [Required]
+        [RegularExpression(@"^(\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}{0,1})$", ErrorMessage = "Specify your tenant ID")]
+        public string TenantId { get; set; }
+        [Required]
+        [RegularExpression(@"^(\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}{0,1})$", ErrorMessage = "Specify your client ID")]
+        public string ClientId { get; set; }
+        [Required]
+        [RegularExpression(@"^(\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}{0,1})$", ErrorMessage = "Specify your client secret")]
+        public string ClientSecret { get; set; }
+
+        public string Scope { get; } = "https://graph.microsoft.com/.default";
+
+        public string GrantType { get; } = "client_credentials";
+    }
 }
