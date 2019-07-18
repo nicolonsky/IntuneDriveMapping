@@ -27,13 +27,15 @@ namespace IntuneDriveMapping.Models
     public class AadAppRegistration
     {
         [Required]
+        [Display(Name = "Tenant ID")]
         [RegularExpression(@"^(\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}{0,1})$", ErrorMessage = "Specify your tenant ID")]
         public string TenantId { get; set; }
         [Required]
+        [Display(Name = "Client ID")]
         [RegularExpression(@"^(\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}{0,1})$", ErrorMessage = "Specify your client ID")]
         public string ClientId { get; set; }
         [Required]
-        [RegularExpression(@"^(\{{0,1}([0-9a-fA-F]){8}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){4}-([0-9a-fA-F]){12}\}{0,1})$", ErrorMessage = "Specify your client secret")]
+        [Display(Name = "Client secret")]
         public string ClientSecret { get; set; }
 
         public string Scope { get; } = "https://graph.microsoft.com/.default";

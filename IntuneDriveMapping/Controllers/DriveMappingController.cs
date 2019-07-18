@@ -21,7 +21,7 @@ namespace IntuneDriveMapping.Controllers
 
         //Configuration params for the generated PowerShell script
         const string poshInsertString = "!INTUNEDRIVEMAPPINGJSON!";
-        const string aadAppRegInsertString = "INTUNEDRIVEMAPPINGAPPREGJSON!";
+        const string aadAppRegInsertString = "!INTUNEDRIVEMAPPINGAPPREGJSON!";
         const string poshTemplateName = "IntuneDriveMappingTemplate.ps1";
         const string poshExportName = "DriveMapping.ps1";
 
@@ -40,7 +40,9 @@ namespace IntuneDriveMapping.Controllers
             {
                 Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
                 DateTime buildDate = new DateTime(2000, 1, 1).AddDays(version.Build).AddSeconds(version.Revision * 2);
-                string displayableVersion = $"{version} ({buildDate})";
+                //string displayableVersion = $"{version} ({buildDate})";
+
+                string displayableVersion = $"{version}";
 
                 ViewBag.Version = displayableVersion;
             }
