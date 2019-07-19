@@ -19,7 +19,6 @@ namespace IntuneDriveMapping.Controllers
 
         //Configuration params for the generated PowerShell script
         const string poshInsertString = "!INTUNEDRIVEMAPPINGJSON!";
-        const string aadAppRegInsertString = "!INTUNEDRIVEMAPPINGAPPREGJSON!";
         const string poshTemplateName = "IntuneDriveMappingTemplate.ps1";
         const string poshExportName = "DriveMapping.ps1";
 
@@ -73,14 +72,6 @@ namespace IntuneDriveMapping.Controllers
                 List<DriveMappingModel> driveMappings = JsonConvert.DeserializeObject<List<DriveMappingModel>>(HttpContext.Session.GetString(sessionName));
 
                 ViewBag.ShowList = true;
-
-                //if item level targeting is configured for any entry we want to display a hint if no aad app config exists
-                if (driveMappings.Any(p => p.GroupFilter != null && (HttpContext.Session.GetString(aadAppRegSession) == null)))
-                {
-
-                    ViewBag.AADConfig = true;
-
-                }
 
                 return View(driveMappings);
 
@@ -143,46 +134,6 @@ namespace IntuneDriveMapping.Controllers
 
             }
 
-        }
-
-        public ActionResult AzureAppRegistration()
-        {
-
-            return View();
-
-        }
-
-        [HttpPost]
-        public ActionResult AzureAppRegistration(AadAppRegistration AadAppReg)
-        {
-            try
-            {
-                if (ModelState.IsValid)
-                {
-                    //check if first ever item is addedd or list with entries already exists
-                    if (HttpContext.Session.GetString(aadAppRegSession) != null)
-                    {
-                        //Existing entry will be overwritten
-                    }
-                    else
-                    {
-                        HttpContext.Session.SetString(aadAppRegSession, JsonConvert.SerializeObject(AadAppReg));
-                    }
-                    return RedirectToAction(indexView);
-                }
-                else
-                {
-                    return View();
-
-                }
-            }
-            catch (Exception ex)
-            {
-                HttpContext.Session.SetString(errosSession, ex.Message.ToString());
-
-                return RedirectToAction(indexView);
-
-            }
         }
 
         [HttpPost]
@@ -381,8 +332,6 @@ namespace IntuneDriveMapping.Controllers
                     string poshTemplate = System.IO.File.ReadAllText(@"wwwroot/bin/" + poshTemplateName);
 
                     poshTemplate = poshTemplate.Replace(poshInsertString, HttpContext.Session.GetString(sessionName));
-
-                    poshTemplate = poshTemplate.Replace(aadAppRegInsertString, HttpContext.Session.GetString(aadAppRegSession));
 
                     //return file download
                     return File(Encoding.UTF8.GetBytes(poshTemplate), "default/text", poshExportName);
