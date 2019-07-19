@@ -4,4 +4,4 @@
 * Seamlessly migrate existing network drive mapping group policies
 * Generate a network drive mapping configuration from scratch
 
-[Documentation is available on my blog](https://intunedrivemapping.azurewebsites.net/DriveMapping)
+[Documentation is available on my blog](tech.nicolonsky.ch/next-level-network-drive-mapping-with-intune/)
