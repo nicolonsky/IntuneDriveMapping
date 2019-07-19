@@ -14,7 +14,7 @@
     if (ViewBag.ShowList != true)
     {
         <div class="upload_file">
-            <h4 style="font-family: monospace;">Upload your exported group policy configuration</h4>
+            <h4 style="font-family: monospace;">Upload your exported group policy configuration or start from scratch</h4>
             @if (ViewBag.Error != null)
             {
                 <br />
@@ -91,7 +91,7 @@
             <br />
             <div class="alert alert-warning alert-dismissible" role="alert">
                 <h4 class="alert-heading">Additional configuration is required</h4>
-                In order to apply the group filter for your end-users you need to create an Azure AD app registration. <a href="#" target="_blank">See documentation for additonal details</a>.
+                In order to apply the group filter for your end-users you need to create an Azure AD app registration. <a href="https://tech.nicolonsky.ch/next-level-network-drive-mapping-with-intune/" target="_blank">See documentation for additonal details</a>.
                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>

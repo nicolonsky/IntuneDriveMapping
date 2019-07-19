@@ -4,17 +4,15 @@ using Microsoft.AspNetCore.Mvc;
 using System.Xml;
 using IntuneDriveMapping.Models;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
-using Microsoft.EntityFrameworkCore;
 using System.Text;
 
 namespace IntuneDriveMapping.Controllers
 {
     public class DriveMappingController : Controller
     {
-        //Htp session configs
+        //Http session configs
         const string sessionName = "driveMappingList";
         const string errosSession = "lastError";
         const string aadAppRegSession = "appReg";
@@ -168,12 +166,8 @@ namespace IntuneDriveMapping.Controllers
                     }
                     else
                     {
-
                         HttpContext.Session.SetString(aadAppRegSession, JsonConvert.SerializeObject(AadAppReg));
-
-                        
                     }
-
                     return RedirectToAction(indexView);
                 }
                 else
@@ -200,7 +194,6 @@ namespace IntuneDriveMapping.Controllers
 
                 if (file != null && file.Length > 0)
                 {
-
                     // create xmldoc
                     XmlDocument xmldoc = new XmlDocument();
 
@@ -224,7 +217,6 @@ namespace IntuneDriveMapping.Controllers
 
                     foreach (XmlNode property in driveProperties)
                     {
-
                         //the real drive mapping configuration is stored in the 2nd XML child-node --> index 1
                         driveMapping = new DriveMappingModel
                         {
@@ -237,7 +229,6 @@ namespace IntuneDriveMapping.Controllers
                         //check if we have a filter applied as child node --> index 2
                         try
                         {
-
                             string groupFilter= property.ChildNodes[2].ChildNodes[0].Attributes["name"].InnerXml;
 
                             String[] streamlinedGroupFilter = groupFilter.Split('\\');
@@ -249,19 +240,15 @@ namespace IntuneDriveMapping.Controllers
                             //nothing we can do
                         }
 
-
                         driveMappings.Add(driveMapping);
 
                         i++;
                     }
 
                     HttpContext.Session.SetString(sessionName, JsonConvert.SerializeObject(driveMappings));
-
                 }
-
                 return RedirectToAction(indexView);
             }
-
             catch (Exception ex)
             {
                 HttpContext.Session.SetString(errosSession, ex.Message.ToString());
@@ -301,13 +288,10 @@ namespace IntuneDriveMapping.Controllers
         [HttpPost]
         public ActionResult Edit(DriveMappingModel driveMapping)
         {
-
             try
             {
-
                 if (ModelState.IsValid)
                 {
-
                     //haven't found better solution --> improvement needed!
                     //so i just remove the existing entry and add the new one and do a resort of the list
 
@@ -324,9 +308,7 @@ namespace IntuneDriveMapping.Controllers
                     return View();
 
                 }
-
                 return RedirectToAction(indexView);
-
             }
 
             catch (Exception ex)
@@ -334,7 +316,6 @@ namespace IntuneDriveMapping.Controllers
                 HttpContext.Session.SetString(errosSession, ex.Message.ToString());
 
                 return RedirectToAction(indexView);
-
             }
         }
 
@@ -355,14 +336,12 @@ namespace IntuneDriveMapping.Controllers
                 {
                     return View(driveMappingEntry);
                 }
-
             }
             catch (Exception ex)
             {
                 HttpContext.Session.SetString(errosSession, ex.Message.ToString());
 
                 return RedirectToAction(indexView);
-
             }
         }
 
@@ -387,16 +366,13 @@ namespace IntuneDriveMapping.Controllers
                 HttpContext.Session.SetString(errosSession, ex.Message.ToString());
 
                 return RedirectToAction(indexView);
-
             }
-  
         }
 
         public ActionResult Download()
         {
             try
             {
-
                 if (HttpContext.Session.GetString(sessionName)!=null)
                 {
 
@@ -408,7 +384,6 @@ namespace IntuneDriveMapping.Controllers
 
                     poshTemplate = poshTemplate.Replace(aadAppRegInsertString, HttpContext.Session.GetString(aadAppRegSession));
 
-
                     //return file download
                     return File(Encoding.UTF8.GetBytes(poshTemplate), "default/text", poshExportName);
 
@@ -416,14 +391,12 @@ namespace IntuneDriveMapping.Controllers
                 {
                     throw new Exception("No session data found, session might have expired");
                 }
-
             }
             catch (Exception ex)
             {
                 HttpContext.Session.SetString(errosSession, ex.Message.ToString());
 
                 return RedirectToAction(indexView);
-
             }
         }
 
@@ -434,19 +407,13 @@ namespace IntuneDriveMapping.Controllers
                 HttpContext.Session.Clear();
 
                 return RedirectToAction(indexView);
-
             }
             catch (Exception ex)
             {
                 HttpContext.Session.SetString(errosSession, ex.Message.ToString());
 
                 return RedirectToAction(indexView);
-
             }
         }
     }
 }
-
-
-
-
