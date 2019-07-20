@@ -20,7 +20,7 @@ Start-Transcript -Path $(Join-Path $env:temp "DriveMapping.log")
 
 $driveMappingJson='!INTUNEDRIVEMAPPINGJSON!'
 
-$driveMappingConfig= $driveMappingJson | ConvertFrom-Json -ErrorAction Stop
+$driveMappingConfig= $driveMappingJson | ConvertFrom-Json
 
 ###########################################################################################
 # Helper function to determine a users group membership									  #
@@ -33,14 +33,21 @@ function Get-ADGroupMembership {
         [string]$UserPrincipalName
     )
 	process{
-        $Searcher = New-Object -TypeName System.DirectoryServices.DirectorySearcher
-        $Searcher.Filter = "(&(userprincipalname=$UserPrincipalName))"
-        $Searcher.SearchRoot = "LDAP://$env:USERDNSDOMAIN"
+
+		try{
+			
+			$Searcher = New-Object -TypeName System.DirectoryServices.DirectorySearcher
+			$Searcher.Filter = "(&(userprincipalname=$UserPrincipalName))"
+			$Searcher.SearchRoot = "LDAP://$env:USERDNSDOMAIN"
         
-		$Searcher.FindOne().GetDirectoryEntry().memberOf | ForEach-Object { 
+			$Searcher.FindOne().GetDirectoryEntry().memberOf | ForEach-Object { 
             
-            $PSItem.split(",")[0].replace("CN=","") 
-        }
+				$PSItem.split(",")[0].replace("CN=","") 
+			}
+		}catch{
+			
+			Write-Warning "Could not determine group membership for: $UserPrincipalName"
+		}
 	}
 }
 
@@ -54,80 +61,61 @@ if ($driveMappingConfig.GroupFilter){
 }
 
 ###########################################################################################
-# DNS connection tests																	  #
-###########################################################################################
-
-## verify dns resolution to individual resources
-$connected=$false
-$retries=1
-$maxRetries=3
-
-# get unique dns names from all entries in the list
-$dnsNames= @()
-
-$driveMappingConfig.Path | Select-Object -Unique | ForEach-Object {
-
-    $i=$_.lastIndexOf('\')
-
-    $dnsNames+= $_.Substring(0,$i).Replace("\","")
-}
-
-$dnsNames = $dnsNames | Select-Object -Unique
-
-#try resolving
-$dnsNames | ForEach-Object {
-    do {
-        
-        if (Resolve-DnsName $PSItem -ErrorAction SilentlyContinue){
-        
-            $connected=$true
-
-        } else{
-    
-            $retries++
-            
-            Write-Warning "Cannot resolve: $PSItem, assuming no connection to fileserver"
-    
-            Start-Sleep -Seconds 3
-    
-            if ($retries -eq $maxRetries){
-                
-                Write-Error "Exceeded maximum numbers of retries ($maxRetries) to resolve dns name ($PSItem)"
-                $Connected=$true
-            }
-        }
-    
-    }while( -not ($Connected))
-}
-
-###########################################################################################
 # Mapping network drives																  #
 ###########################################################################################
 
-#Refresh PowerShell drives (useful for testing)
-$null= Get-PSDrive
+#Get PowerShell drives and rename properties
+$psDrives = Get-PSDrive | Select-Object @{N="DriveLetter"; E={$_.Name}}, @{N="Path"; E={$_.DisplayRoot}}
 
+#iterate through all network drive configuration entries
 $driveMappingConfig.GetEnumerator() | ForEach-Object {
 
-    ## check itemleveltargeting for group membership
-    if ($PSItem.GroupFilter -ne $null -and $groupMemberships -contains $PSItem.GroupFilter)
-    {
-		Write-Output "Mapping network drive $($PSItem.Path)"
+	#check if the drive is already connected with an identical configuration
+	if ( -not ($psDrives.Path -contains $PSItem.Path -and $psDrives.DriveLetter -contains $PSItem.DriveLetter))
+	{
+		try{
 
-		$null = New-PSDrive -PSProvider FileSystem -Name $PSItem.DriveLetter -Root $PSItem.Path -Description $PSItem.Label -Persist -Scope global
+			#check if drive exists - but with wrong config - to delete it
+			if($psDrives.Path -contains $PSItem.Path -or $psDrives.DriveLetter -contains $PSItem.DriveLetter))
+			{
+				Get-PSDrive | Where-Object {$_.DisplayRoot -eq $PSItem.Path-or $_.Name -eq $PSItem.DriveLetter} | Remove-PSDrive -ErrorAction SilentlyContinue
+			}
 
-		(New-Object -ComObject Shell.Application).NameSpace("$($PSItem.DriveLetter):").Self.Name=$PSItem.Label
+			 ## check itemleveltargeting for group membership
+			if ($PSItem.GroupFilter -ne $null -and $groupMemberships -contains $PSItem.GroupFilter)
+			{
+				Write-Output "Mapping network drive $($PSItem.Path)"
 
-    }elseif ($PSItem.GroupFilter -eq $null) {
+				$null = New-PSDrive -PSProvider FileSystem -Name $PSItem.DriveLetter -Root $PSItem.Path -Description $PSItem.Label -Persist -Scope global -ErrorAction Stop
 
-        Write-Output "Mapping network drive $($PSItem.Path)"
+				(New-Object -ComObject Shell.Application).NameSpace("$($PSItem.DriveLetter):").Self.Name=$PSItem.Label
 
-        $null = New-PSDrive -PSProvider FileSystem -Name $PSItem.DriveLetter -Root $PSItem.Path -Description $PSItem.Label -Persist -Scope global
+			}elseif ($PSItem.GroupFilter -eq $null) {
 
-        (New-Object -ComObject Shell.Application).NameSpace("$($PSItem.DriveLetter):").Self.Name=$PSItem.Label
-    }     
+				Write-Output "Mapping network drive $($PSItem.Path)"
+
+				$null = New-PSDrive -PSProvider FileSystem -Name $PSItem.DriveLetter -Root $PSItem.Path -Description $PSItem.Label -Persist -Scope global -ErrorAction Stop
+
+				(New-Object -ComObject Shell.Application).NameSpace("$($PSItem.DriveLetter):").Self.Name=$PSItem.Label
+			}    
+
+		}catch{
+			
+			Write-Error $_.Exception
+
+			#as soon as we write to the error stream IME considers this script as failed and will try it three times more
+
+			#reset IME script execution?
+			#copy script to client and try to rerun it from there until success?
+			#package script inside win32app and detect drives via psdetectionscript
+
+			#still lookin for the best solution
+		}
+	}else{
+        
+        Write-Output "Drive already exists with same DriveLetter and Path"
+    }
 }
-
 ###########################################################################################
 # End & finish transcript																  #
 ###########################################################################################
