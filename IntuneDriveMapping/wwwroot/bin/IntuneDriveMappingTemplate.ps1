@@ -63,7 +63,6 @@ if ($driveMappingConfig.GroupFilter){
 ###########################################################################################
 # Mapping network drives																  #
 ###########################################################################################
-
 #Get PowerShell drives and rename properties
 $psDrives = Get-PSDrive | Select-Object @{N="DriveLetter"; E={$_.Name}}, @{N="Path"; E={$_.DisplayRoot}}
 
@@ -71,19 +70,17 @@ $psDrives = Get-PSDrive | Select-Object @{N="DriveLetter"; E={$_.Name}}, @{N="Pa
 $driveMappingConfig.GetEnumerator() | ForEach-Object {
 
 	#check if the drive is already connected with an identical configuration
-	if ( -not ($psDrives.Path -contains $PSItem.Path -and $psDrives.DriveLetter -contains $PSItem.DriveLetter))
-	{
-		try{
+	if ( -not ($psDrives.Path -contains $PSItem.Path -and $psDrives.DriveLetter -contains $PSItem.DriveLetter)){
 
+		try{
 			#check if drive exists - but with wrong config - to delete it
-			if($psDrives.Path -contains $PSItem.Path -or $psDrives.DriveLetter -contains $PSItem.DriveLetter))
-			{
-				Get-PSDrive | Where-Object {$_.DisplayRoot -eq $PSItem.Path-or $_.Name -eq $PSItem.DriveLetter} | Remove-PSDrive -ErrorAction SilentlyContinue
+			if($psDrives.Path -contains $PSItem.Path -or $psDrives.DriveLetter -contains $PSItem.DriveLetter){
+
+				Get-PSDrive | Where-Object {$_.DisplayRoot -eq $PSItem.Path -or $_.Name -eq $PSItem.DriveLetter} | Remove-PSDrive -ErrorAction SilentlyContinue
 			}
 
 			 ## check itemleveltargeting for group membership
-			if ($PSItem.GroupFilter -ne $null -and $groupMemberships -contains $PSItem.GroupFilter)
-			{
+			if ($PSItem.GroupFilter -ne $null -and $groupMemberships -contains $PSItem.GroupFilter){
 				Write-Output "Mapping network drive $($PSItem.Path)"
 
 				$null = New-PSDrive -PSProvider FileSystem -Name $PSItem.DriveLetter -Root $PSItem.Path -Description $PSItem.Label -Persist -Scope global -ErrorAction Stop
@@ -98,7 +95,6 @@ $driveMappingConfig.GetEnumerator() | ForEach-Object {
 
 				(New-Object -ComObject Shell.Application).NameSpace("$($PSItem.DriveLetter):").Self.Name=$PSItem.Label
 			}    
-
 		}catch{
 			
 			Write-Error $_.Exception
@@ -108,13 +104,13 @@ $driveMappingConfig.GetEnumerator() | ForEach-Object {
 			#reset IME script execution?
 			#copy script to client and try to rerun it from there until success?
 			#package script inside win32app and detect drives via psdetectionscript
-
 			#still lookin for the best solution
 		}
-	}else{
-        
-        Write-Output "Drive already exists with same DriveLetter and Path"
-    }
+		else{
+			
+			Write-Output "Drive already exists with same DriveLetter and Path"
+		}
+	}
 }
 ###########################################################################################
 # End & finish transcript																  #
