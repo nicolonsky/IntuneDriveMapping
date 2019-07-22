@@ -4,10 +4,7 @@
 }
 
 <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
 
-<br />
 <h2>intune-drive-mapping-generator</h2>
 @using (Html.BeginForm("Upload", "DriveMapping", FormMethod.Post, new { enctype = "multipart/form-data" }))
 {
@@ -25,11 +22,11 @@
                     </button>
                 </div>
             }
-            <div class="form-group" style="float:left">
+            <div class="form-group">
                 <div class="input-group input-file" name="fileuploader">
-                    <input type="text" class="form-control" id="fileUpload" name="fileUpload" placeholder='Choose a file...' style="float:left" />
+                    <input type="text" class="form-control mr-1" id="fileUpload" name="fileUpload" placeholder="Choose a file..." />
                     <span class="input-group-btn">
-                        <button class="btn btn-default btn-choose" type="button">Choose</button>
+                        <button class="btn btn-outline-primary btn-choose" type="button">Choose</button>
                     </span>
                 </div>
             </div>
@@ -63,29 +60,25 @@
                 $(function () {
                     bs_input_file();
                 });
-
-
-/**/</script>
-            <input type="submit" class="btn btn-primary" value="Upload" />
-            <input type="button" class="btn btn-success" value="Build from scratch" onclick="location.href='@Url.Action("Create", "DriveMapping")'" />
+            </script>
         </div>
+        <input type="submit" class="btn btn-primary pull-left" value="Upload" />
+        <input type="button" class="btn btn-success pull-left" value="Build from scratch" onclick="location.href='@Url.Action("Create", "DriveMapping")'" />
     }
 
     if (@ViewBag.ShowList)
     {
         <h4 style="font-family: monospace;">Change your drivemapping configuration if needed</h4>
-
+        <br />
         if (ViewBag.Error != null)
         {
-            <br />
-            <div class="alert alert-danger alert-dismissible" role="alert">
+            <div class="alert alert-danger alert-dismissible show fade" role="alert">
                 <strong>Error: </strong>@ViewBag.Error
                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
         }
-        <br />
         <table class="table">
             <thead>
                 <tr>
@@ -121,7 +114,7 @@
                             @Html.DisplayFor(modelItem => item.GroupFilter)
                         </td>
                         <td>
-                            @Html.ActionLink("Edit", "Edit", new { Id = item.Id })|
+                            @Html.ActionLink("Edit", "Edit", new { Id = item.Id }) |
                             @Html.ActionLink("Delete", "Delete", new { Id = item.Id })
                         </td>
                     </tr>
@@ -129,11 +122,32 @@
             </tbody>
         </table>
         <br />
-        <input type="button" class="btn btn-success" value="Add entry" onclick="location.href='@Url.Action("Create", "DriveMapping")'" />
+        <input type="button" class="btn btn-danger float-right mr-1" value="Start over" data-toggle="modal" data-target="#startOverModal" />
+        <input type="button" class="btn btn-success float-right mr-1" value="Add entry" onclick="location.href='@Url.Action("Create", "DriveMapping")'" />
         <input type="button" class="btn btn-primary" value="Download PowerShell script" onclick="location.href='@Url.Action("Download", "DriveMapping")'" />
-        <input type="button" class="btn btn-danger" value="Start over" onclick="location.href='@Url.Action("ResetSession", "DriveMapping")'" />
+  
+        <!-- Modal for start over (clear session)-->
+        <div class="modal fade" id="startOverModal" tabindex="-1" role="dialog" aria-labelledby="startOverModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="startOverModalLabel">Are you sure want to start over?</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p>All configuration and uploaded data will be cleared.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <input type="button" class="btn btn-danger float-right mr-1" value="Start over" onclick="location.href='@Url.Action("ResetSession", "DriveMapping")'" />
+                    </div>
+                </div>
+            </div>
+        </div>
+        }
     }
-}
+        
+    <code class="float-right mt-5 pt-2">Version: @ViewBag.Version</code>
 
-<br>
-<code>Version: @ViewBag.Version</code>
