@@ -106,10 +106,10 @@ $driveMappingConfig.GetEnumerator() | ForEach-Object {
 			#package script inside win32app and detect drives via psdetectionscript
 			#still lookin for the best solution
 		}
-		else{
+		
+	}else{
 			
-			Write-Output "Drive already exists with same DriveLetter and Path"
-		}
+		Write-Output "Drive already exists with same DriveLetter and Path"
 	}
 }
 ###########################################################################################
