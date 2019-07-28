@@ -2,10 +2,12 @@
 @{
     ViewData["Title"] = "intune-drive-mapping generator-";
 }
+<script src="~/vendor.min.js"></script>
 
-<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<code class="float-right">Version: @ViewBag.Version</code>
 
 <h2>intune-drive-mapping-generator</h2>
+
 @using (Html.BeginForm("Upload", "DriveMapping", FormMethod.Post, new { enctype = "multipart/form-data" }))
 {
     if (ViewBag.ShowList != true)
@@ -149,5 +151,5 @@
         }
     }
         
-    <code class="float-right mt-5 pt-2">Version: @ViewBag.Version</code>
+    
 
