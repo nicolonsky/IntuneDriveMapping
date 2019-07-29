@@ -38,13 +38,9 @@ function Get-ADGroupMembership {
 
 			$Searcher = New-Object -TypeName System.DirectoryServices.DirectorySearcher
 			$Searcher.Filter = "(&(userprincipalname=$UserPrincipalName))"
-			$Searcher.SearchScope = "subtree"
-			
-			$distinguishedname = $Searcher.FindOne().Properties.distinguishedname
-			
-			$GroupFilter = "(member:1.2.840.113556.1.4.1941:=$distinguishedname)"
-			$Searcher.Filter = $GroupFilter
-			$Searcher.SearchScope = "Subtree"
+			$Searcher.SearchRoot = "LDAP://$env:USERDNSDOMAIN"
+			$DistinguishedName = $Searcher.FindOne().Properties.distinguishedname
+			$Searcher.Filter = "(member:1.2.840.113556.1.4.1941:=$DistinguishedName)"
 			
 			[void]$Searcher.PropertiesToLoad.Add("name")
 			
@@ -98,6 +94,19 @@ try{
 $driveMappingConfig.GetEnumerator() | ForEach-Object {
 
 	try{
+
+		#check if variable in unc path exists, e.g. for $env:USERNAME
+		if ($PSItem.Path -match '\$env:'){
+
+			$PsItem.Path=$ExecutionContext.InvokeCommand.ExpandString($PSItem.Path)
+			
+		}
+
+		#if label is null we need to set it to empty in order to avoid error
+		if ($PSItem.Label -eq $null){
+
+			$Psitem.Label = ""
+		}
 		
 		#check if the drive is already connected with an identical configuration
 		if ( -not ($psDrives.Path -contains $PSItem.Path -and $psDrives.DriveLetter -contains $PSItem.DriveLetter)){
