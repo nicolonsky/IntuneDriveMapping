@@ -6,6 +6,6 @@
 * Supports security group filtering (with nested groups)
 * Supports recurring execution on clients
 
-[Image]!(https://tech.nicolonsky.ch/content/images/2019/07/intune-drivemapping-generator.png)
+[Image](https://tech.nicolonsky.ch/content/images/2019/07/intune-drivemapping-generator.png)
 
 [Documentation is available on my blog](https://tech.nicolonsky.ch/next-level-network-drive-mapping-with-intune/)
