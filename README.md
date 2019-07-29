@@ -1,6 +1,6 @@
-# IntuneDriveMapping (intune-drive-mapping-generator)
+# intune-drive-mapping-generator
 
-* Generate an Intune PowerShell script to map network drives on Azure AD joined devices
+* Generate Intune PowerShell scripts to map network drives on Azure AD joined devices
 * Seamlessly migrate existing network drive mapping group policies
 * Generate a network drive mapping configuration from scratch
 * Supports security group filtering (with nested groups)
