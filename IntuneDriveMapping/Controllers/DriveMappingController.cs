@@ -7,6 +7,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using System.Text;
+using System.IO;
 
 namespace IntuneDriveMapping.Controllers
 {
@@ -21,6 +22,8 @@ namespace IntuneDriveMapping.Controllers
         const string poshInsertString = "!INTUNEDRIVEMAPPINGJSON!";
         const string poshTemplateName = "IntuneDriveMappingTemplate.ps1";
         const string poshExportName = "DriveMapping.ps1";
+        const string poshConfigVariable = "$driveMappingJson=";
+        const string poshConfigVariableEnd = "$driveMappingConfig";
 
         //default view where everything comes together
         const string indexView = "Index";
@@ -145,58 +148,94 @@ namespace IntuneDriveMapping.Controllers
 
                 if (file != null && file.Length > 0)
                 {
-                    // create xmldoc
-                    XmlDocument xmldoc = new XmlDocument();
-
-                    xmldoc.Load(file.OpenReadStream());
-
-                    //namespace manager & URI's needed in order to read GPP nodes
-                    XmlNamespaceManager nsmanager = new XmlNamespaceManager(xmldoc.NameTable);
-
-                    nsmanager.AddNamespace("q1", "http://www.microsoft.com/GroupPolicy/Settings");
-                    nsmanager.AddNamespace("q2", "http://www.microsoft.com/GroupPolicy/Settings/DriveMaps");
-
-                    XmlNodeList driveProperties = xmldoc.SelectNodes("q1:GPO/q1:User/q1:ExtensionData/q1:Extension/q2:DriveMapSettings/q2:Drive", nsmanager);
-
-                    //create list to store all entries
-                    List <DriveMappingModel> driveMappings = new List<DriveMappingModel>();
-
-                    DriveMappingModel driveMapping;
-
-                    //helper index to assign id to our entries 
-                    int i = 0;
-
-                    foreach (XmlNode property in driveProperties)
+                    if (file.FileName.Contains(".ps1"))
                     {
-                        //the real drive mapping configuration is stored in the 2nd XML child-node --> index 1
-                        driveMapping = new DriveMappingModel
-                        {
-                            Path = property.ChildNodes[1].Attributes["path"].InnerXml,
-                            DriveLetter = property.ChildNodes[1].Attributes["letter"].InnerXml,
-                            Label = property.ChildNodes[1].Attributes["label"].InnerXml,
-                            Id = (i + 1)
-                        };
 
-                        //check if we have a filter applied as child node --> index 2
-                        try
-                        {
-                            string groupFilter= property.ChildNodes[2].ChildNodes[0].Attributes["name"].InnerXml;
+                        string powerShellContent;
 
-                            String[] streamlinedGroupFilter = groupFilter.Split('\\');
+                        string driveMappingJson;
 
-                            driveMapping.GroupFilter = streamlinedGroupFilter[1];
-                        }
-                        catch
-                        {
-                            //nothing we can do
-                        }
+                        int driveMappingJsonLocation;
 
-                        driveMappings.Add(driveMapping);
+                        int driveMappingJsonLocationEnd;
 
-                        i++;
+                        StreamReader inputStreamReader = new StreamReader(file.OpenReadStream());
+
+                        powerShellContent = inputStreamReader.ReadToEnd();
+
+                        driveMappingJsonLocation = powerShellContent.IndexOf(poshConfigVariable);
+
+                        driveMappingJsonLocationEnd = powerShellContent.IndexOf(poshConfigVariableEnd);
+
+                        driveMappingJson = powerShellContent.Substring(driveMappingJsonLocation, driveMappingJsonLocationEnd);
+
+                        throw new Exception(driveMappingJson);
+
+                        List <DriveMappingModel> driveMappings = JsonConvert.DeserializeObject<List<DriveMappingModel>>(driveMappingJson);
+
+                        HttpContext.Session.SetString(sessionName, JsonConvert.SerializeObject(driveMappings));
+
+                        return RedirectToAction(indexView);
+
                     }
+                    else if (file.FileName.Contains(".xml"))
+                    {
+                        // create xmldoc
+                        XmlDocument xmldoc = new XmlDocument();
 
-                    HttpContext.Session.SetString(sessionName, JsonConvert.SerializeObject(driveMappings));
+                        xmldoc.Load(file.OpenReadStream());
+
+                        //namespace manager & URI's needed in order to read GPP nodes
+                        XmlNamespaceManager nsmanager = new XmlNamespaceManager(xmldoc.NameTable);
+
+                        nsmanager.AddNamespace("q1", "http://www.microsoft.com/GroupPolicy/Settings");
+                        nsmanager.AddNamespace("q2", "http://www.microsoft.com/GroupPolicy/Settings/DriveMaps");
+
+                        XmlNodeList driveProperties = xmldoc.SelectNodes("q1:GPO/q1:User/q1:ExtensionData/q1:Extension/q2:DriveMapSettings/q2:Drive", nsmanager);
+
+                        //create list to store all entries
+                        List<DriveMappingModel> driveMappings = new List<DriveMappingModel>();
+
+                        DriveMappingModel driveMapping;
+
+                        //helper index to assign id to our entries 
+                        int i = 0;
+
+                        foreach (XmlNode property in driveProperties)
+                        {
+                            //the real drive mapping configuration is stored in the 2nd XML child-node --> index 1
+                            driveMapping = new DriveMappingModel
+                            {
+                                Path = property.ChildNodes[1].Attributes["path"].InnerXml,
+                                DriveLetter = property.ChildNodes[1].Attributes["letter"].InnerXml,
+                                Label = property.ChildNodes[1].Attributes["label"].InnerXml,
+                                Id = (i + 1)
+                            };
+
+                            //check if we have a filter applied as child node --> index 2
+                            try
+                            {
+                                string groupFilter = property.ChildNodes[2].ChildNodes[0].Attributes["name"].InnerXml;
+
+                                String[] streamlinedGroupFilter = groupFilter.Split('\\');
+
+                                driveMapping.GroupFilter = streamlinedGroupFilter[1];
+                            }
+                            catch
+                            {
+                                //nothing we can do
+                            }
+
+                            driveMappings.Add(driveMapping);
+
+                            i++;
+                        }
+
+                        HttpContext.Session.SetString(sessionName, JsonConvert.SerializeObject(driveMappings));
+                    }else
+                    {
+                        throw new NullReferenceException();
+                    }
                 }
                 return RedirectToAction(indexView);
             }
