@@ -7,6 +7,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using System.Text;
+using System.IO;
 
 namespace IntuneDriveMapping.Controllers
 {
@@ -15,23 +16,21 @@ namespace IntuneDriveMapping.Controllers
         //Http session configs
         const string sessionName = "driveMappingList";
         const string errosSession = "lastError";
-        const string aadAppRegSession = "appReg";
 
         //Configuration params for the generated PowerShell script
         const string poshInsertString = "!INTUNEDRIVEMAPPINGJSON!";
         const string poshTemplateName = "IntuneDriveMappingTemplate.ps1";
         const string poshExportName = "DriveMapping.ps1";
+        const string poshConfigVariable = "$driveMappingJson=";
 
         //default view where everything comes together
         const string indexView = "Index";
-
 
         public ActionResult Index()
         {
             //don't display any table data if no content is available
             ViewBag.ShowList = false;
 
-            
             //get version
             try
             {
@@ -48,7 +47,6 @@ namespace IntuneDriveMapping.Controllers
                 //SunFunNothingTodo
             }
 
-
             //check if error message is stored in session & forward to view
             if (HttpContext.Session.GetString(errosSession) != null)
             {
@@ -59,7 +57,6 @@ namespace IntuneDriveMapping.Controllers
 
             }
 
-
             //check if a drivemapping list exists and display it
             if (HttpContext.Session.GetString(sessionName)==null)
             {
@@ -68,34 +65,26 @@ namespace IntuneDriveMapping.Controllers
 
             else 
             {
-                
                 List<DriveMappingModel> driveMappings = JsonConvert.DeserializeObject<List<DriveMappingModel>>(HttpContext.Session.GetString(sessionName));
 
                 ViewBag.ShowList = true;
 
                 return View(driveMappings);
-
             }
-
         }
-
-         public ActionResult Create()
+        public ActionResult Create()
         {
-
             return View();
-
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult Create(DriveMappingModel driveMapping)
         {
-
             try
             {
-
                 if (ModelState.IsValid)
                 {
-
                     //check if first ever item is addedd or list with entries already exists
                     if (HttpContext.Session.GetString(sessionName) != null)
                     {
@@ -119,11 +108,9 @@ namespace IntuneDriveMapping.Controllers
                 else
                 {
                     return View();
-
                 }
 
                 return RedirectToAction(indexView);
-
             }
 
             catch (Exception ex)
@@ -133,17 +120,53 @@ namespace IntuneDriveMapping.Controllers
                 return RedirectToAction(indexView);
 
             }
-
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult Upload()
         {
             try
             {
                 var file = Request.Form.Files[0];
 
-                if (file != null && file.Length > 0)
+
+                if (file.FileName.Contains(".ps1"))
+                {
+
+                    string driveMappingConfig=null;
+                    string line;
+                        
+
+                    System.IO.StreamReader powerShellContent = new System.IO.StreamReader(file.OpenReadStream()); 
+
+                    while ((line = powerShellContent.ReadLine()) != null)
+                    {
+                        if(line.StartsWith(poshConfigVariable))
+                        {
+                            driveMappingConfig = line;
+
+                            driveMappingConfig = driveMappingConfig.Replace(poshConfigVariable, "");
+                            driveMappingConfig = driveMappingConfig.TrimStart('\'');
+                            driveMappingConfig = driveMappingConfig.TrimEnd('\'');
+
+                        }
+                    }
+
+                    if (driveMappingConfig != null)
+                    {
+                        List<DriveMappingModel> driveMappings = JsonConvert.DeserializeObject<List<DriveMappingModel>>(driveMappingConfig);
+
+                        HttpContext.Session.SetString(sessionName, JsonConvert.SerializeObject(driveMappings));
+
+                        return RedirectToAction(indexView);
+                    }
+                    else
+                    {
+                        throw new SystemException("Could not find configuration in uploaded PowerShell script.");
+                    }
+                }
+                else if (file.FileName.Contains(".xml"))
                 {
                     // create xmldoc
                     XmlDocument xmldoc = new XmlDocument();
@@ -159,7 +182,7 @@ namespace IntuneDriveMapping.Controllers
                     XmlNodeList driveProperties = xmldoc.SelectNodes("q1:GPO/q1:User/q1:ExtensionData/q1:Extension/q2:DriveMapSettings/q2:Drive", nsmanager);
 
                     //create list to store all entries
-                    List <DriveMappingModel> driveMappings = new List<DriveMappingModel>();
+                    List<DriveMappingModel> driveMappings = new List<DriveMappingModel>();
 
                     DriveMappingModel driveMapping;
 
@@ -180,7 +203,7 @@ namespace IntuneDriveMapping.Controllers
                         //check if we have a filter applied as child node --> index 2
                         try
                         {
-                            string groupFilter= property.ChildNodes[2].ChildNodes[0].Attributes["name"].InnerXml;
+                            string groupFilter = property.ChildNodes[2].ChildNodes[0].Attributes["name"].InnerXml;
 
                             String[] streamlinedGroupFilter = groupFilter.Split('\\');
 
@@ -198,6 +221,11 @@ namespace IntuneDriveMapping.Controllers
 
                     HttpContext.Session.SetString(sessionName, JsonConvert.SerializeObject(driveMappings));
                 }
+                else
+                {
+                    throw new NullReferenceException();
+                }
+
                 return RedirectToAction(indexView);
             }
             catch (Exception ex)
@@ -237,14 +265,14 @@ namespace IntuneDriveMapping.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public ActionResult Edit(DriveMappingModel driveMapping)
         {
             try
             {
                 if (ModelState.IsValid)
                 {
-                    //haven't found better solution --> improvement needed!
-                    //so i just remove the existing entry and add the new one and do a resort of the list
+                    //haven't found better solution: so i just remove the existing entry and add the new one and do a resort of the list
 
                     List<DriveMappingModel> driveMappings = JsonConvert.DeserializeObject<List<DriveMappingModel>>(HttpContext.Session.GetString(sessionName));
 
