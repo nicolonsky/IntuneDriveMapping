@@ -276,7 +276,16 @@ namespace IntuneDriveMapping.Controllers
 
                     List<DriveMappingModel> driveMappings = JsonConvert.DeserializeObject<List<DriveMappingModel>>(HttpContext.Session.GetString(sessionName));
 
-                    driveMappings.RemoveAt(driveMapping.Id - 1);
+                    if (driveMapping.Id == 0)
+                    {
+                        driveMappings.RemoveAt(driveMapping.Id);
+
+                    }
+                    else
+                    {
+                        driveMappings.RemoveAt(driveMapping.Id - 1);
+
+                    }
 
                     driveMappings.Add(driveMapping);
 
@@ -287,6 +296,7 @@ namespace IntuneDriveMapping.Controllers
                     return View();
 
                 }
+
                 return RedirectToAction(indexView);
             }
 
