@@ -31,22 +31,6 @@ namespace IntuneDriveMapping.Controllers
             //don't display any table data if no content is available
             ViewBag.ShowList = false;
 
-            //get version
-            try
-            {
-                Version version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-                DateTime buildDate = new DateTime(2000, 1, 1).AddDays(version.Build).AddSeconds(version.Revision * 2);
-                //string displayableVersion = $"{version} ({buildDate})";
-
-                string displayableVersion = $"{version}";
-
-                ViewBag.Version = displayableVersion;
-            }
-            catch
-            {
-                //SunFunNothingTodo
-            }
-
             //check if error message is stored in session & forward to view
             if (HttpContext.Session.GetString(errosSession) != null)
             {
