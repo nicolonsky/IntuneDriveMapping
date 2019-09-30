@@ -34,8 +34,8 @@
 
             <div class="navbar-collapse collapse" id="navbarSupportedContent">
                 <ul class="nav navbar-nav mr-auto">
-                    <li class="nav-item"><a href="/" class="nav-link">home</a></li>
                     <li class="nav-item"><a asp-area="" asp-controller="DriveMapping" asp-action="" class="nav-link">intune-drive-mapping-generator</a></li>
+                    <li class="nav-item"><a href="https://tech.nicolonsky.ch/next-level-network-drive-mapping-with-intune/" target="_blank" class="nav-link">docs</a></li>
                 </ul>
             </div>
         </div>
@@ -46,7 +46,7 @@
         @RenderBody()
     <footer class="pt-4">
         <hr />
-        <p>&copy; 2019 - nicola suter (nicolonsky tech) <code class="float-right">version: @typeof(IntuneDriveMapping.Program).Assembly.GetName().Version</code></p>
+        <p>&copy; 2019 - nicola suter (<a href="https://tech.nicolonsky.ch" target="_blank">nicolonsky tech</a>) <code class="float-right">version: @typeof(IntuneDriveMapping.Program).Assembly.GetName().Version</code></p>
     </footer>
     </div>
     <script src="~/vendor.min.js"></script>
