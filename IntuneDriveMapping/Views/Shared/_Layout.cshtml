@@ -3,19 +3,13 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"]nicolonsky tools</title>
+    <title>Intune Drive Mapping Generator</title>
     <!-- inside <head> -->
     <link rel="stylesheet" href="~/vendor.min.css" />
-    <style>
-        .nav-item a {
-            color: white !important;
-            cursor: pointer;
-        }
-            .nav-item a:hover {
-                color: white !important;
-                cursor: pointer;
-            }
-    </style>
+
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css"
+          integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt"
+          crossorigin="anonymous">
     <!-- Global site tag (gtag.js) - Google Analytics -->
     <script async src="https://www.googletagmanager.com/gtag/js?id=UA-108122616-3"></script>
     <script>
@@ -27,28 +21,37 @@
     </script>
 </head>
 <body>
-    <nav class="navbar navbar-expand-sm navbar-dark fixed-top bg-dark">
+    <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark mb-5">
         <div class="container">
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"></button>
-            <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand">nicolonsky tools</a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarCollapse"
+                    aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <a asp-area="" asp-controller="Home" asp-action="Index" class="navbar-brand">Intune Drive Mapping Generator</a>
 
             <div class="navbar-collapse collapse" id="navbarSupportedContent">
                 <ul class="nav navbar-nav mr-auto">
-                    <li class="nav-item"><a asp-area="" asp-controller="DriveMapping" asp-action="" class="nav-link">intune-drive-mapping-generator</a></li>
-                    <li class="nav-item"><a href="https://tech.nicolonsky.ch/next-level-network-drive-mapping-with-intune/" target="_blank" class="nav-link">docs</a></li>
+                    <li class="nav-item"><a asp-area="" asp-controller="DriveMapping" asp-action="" class="nav-link">Generator</a></li>
+                    <li class="nav-item"><a href="https://tech.nicolonsky.ch/next-level-network-drive-mapping-with-intune/" target="_blank" class="nav-link">Docs</a></li>
                 </ul>
             </div>
         </div>
-</nav>
-    <div class="container body-content pt-5">
-        <br />
-        <br />
+    </nav>
+    <br />
+    <br />
+    <main role="main" class="container mt-5">
+
         @RenderBody()
-    <footer class="pt-4">
-        <hr />
-        <p>&copy; 2019 - nicola suter (<a href="https://tech.nicolonsky.ch" target="_blank">nicolonsky tech</a>) <code class="float-right">version: @typeof(IntuneDriveMapping.Program).Assembly.GetName().Version</code></p>
+
+    </main>
+    <br />
+    <footer class="footer mt-auto fixed-bottom py-2" style="background-color:#f5f5f5">
+        <div class="container">
+            <span class="">Version: <span class="badge badge-secondary">@typeof(IntuneDriveMapping.Program).Assembly.GetName().Version</span></span>
+            <span class="float-right">Presented by Nicola Suter</span>
+        </div>
     </footer>
-    </div>
+
     <script src="~/vendor.min.js"></script>
 </body>
 </html>

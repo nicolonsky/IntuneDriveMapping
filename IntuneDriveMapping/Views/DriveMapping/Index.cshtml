@@ -1,10 +1,8 @@
 ﻿@model IEnumerable<IntuneDriveMapping.Models.DriveMappingModel>
-@{
-    ViewData["Title"] = "intune-drive-mapping generator-";
-}
+
 <script src="~/vendor.min.js"></script>
 
-<h2>intune-drive-mapping-generator</h2>
+<h2>Generator</h2>
 
 @using (Html.BeginForm("Upload", "DriveMapping", FormMethod.Post, new { enctype = "multipart/form-data" }))
 {

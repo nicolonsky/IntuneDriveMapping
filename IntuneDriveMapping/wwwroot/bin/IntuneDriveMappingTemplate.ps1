@@ -145,6 +145,10 @@ $driveMappingConfig.GetEnumerator() | ForEach-Object {
 		Write-Warning $_.Exception.Message
 	}
 }
+
+# Fix to ensure drives are mapped as persistent!
+Get-ChildItem -Path HKCU:\Network | ForEach-Object {New-ItemProperty -Name ConnectionType -Value 1 -Path $_.PSPath -Force}
+
 ###########################################################################################
 # End & finish transcript																  #
 ###########################################################################################
