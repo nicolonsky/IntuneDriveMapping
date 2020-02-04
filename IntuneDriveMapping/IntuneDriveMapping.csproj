@@ -40,4 +40,10 @@
     <Folder Include="Examples\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Compile Update="Models\DriveMapping.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Compile>
+  </ItemGroup>
+
 </Project>

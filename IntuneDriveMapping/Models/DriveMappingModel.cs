@@ -10,7 +10,7 @@ namespace IntuneDriveMapping.Models
     {
         [Display(Name ="UNC Path")]
         [Required]
-        [RegularExpression(@"^\\\\[a-zA-Z0-9\.\-_\@]{1,}(\\[a-zA-Z0-9\%\$\:\\_]{1,}){1,}[\$]{0,1}", ErrorMessage = "Valid UNC path required")]
+        [RegularExpression(@"^\\\\[a-zA-Z0-9\.\-_\@]{1,}(\\[a-zA-Z0-9\%\$\:\\_\-]{1,}){1,}[\$]{0,1}", ErrorMessage = "Valid UNC path required")]
         public string Path { get; set; }
         [Required]
         [RegularExpression(@"^[a-zA-Z]{1}$", ErrorMessage = "Specify single character")]
