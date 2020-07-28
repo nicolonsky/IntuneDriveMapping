@@ -10,4 +10,4 @@
 
 [Documentation is available on my blog](https://tech.nicolonsky.ch/next-level-network-drive-mapping-with-intune/)
 
-![Image](https://tech.nicolonsky.ch/content/images/2019/07/intune-drivemapping-generator.png)
+![image](https://user-images.githubusercontent.com/32899754/88693062-21c4b980-d0ff-11ea-8e5e-adbc655fe0e6.png)
