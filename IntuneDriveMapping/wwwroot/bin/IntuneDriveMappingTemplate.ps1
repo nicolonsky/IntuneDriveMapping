@@ -20,7 +20,7 @@ Start-Transcript -Path $(Join-Path $env:temp "DriveMapping.log")
 # Input values from generator															  #
 ###########################################################################################
 
-$driveMappingJson = '[{"Path":"\\\\ds.nicolonsky.ch\\root\\public","DriveLetter":"P","Label":"Public","Id":0,"GroupFilter":null},{"Path":"\\\\ds.nicolonsky.ch\\root","DriveLetter":"F","Label":"DFS","Id":1,"GroupFilter":null}]'
+$driveMappingJson = '!INTUNEDRIVEMAPPINGJSON!'
 
 $driveMappingConfig = $driveMappingJson | ConvertFrom-Json -ErrorAction Stop
 
@@ -42,30 +42,31 @@ function Get-ADGroupMembership {
 
 		try {
 
-            if ([string]::IsNullOrEmpty($env:USERDNSDOMAIN) -and [string]::IsNullOrEmpty($overrideUserDnsDomain)) {
-			    Write-Error "Security group filtering won't work because `$env:USERDNSDOMAIN is not available!"
-                Write-Warning "You can override your AD Domain in the `$overrideUserDnsDomain variable"
-		    }else{
+			if ([string]::IsNullOrEmpty($env:USERDNSDOMAIN) -and [string]::IsNullOrEmpty($overrideUserDnsDomain)) {
+				Write-Error "Security group filtering won't work because `$env:USERDNSDOMAIN is not available!"
+				Write-Warning "You can override your AD Domain in the `$overrideUserDnsDomain variable"
+			}
+			else {
 
-			    $Searcher = New-Object -TypeName System.DirectoryServices.DirectorySearcher
-			    $Searcher.Filter = "(&(userprincipalname=$UserPrincipalName))"
-			    $Searcher.SearchRoot = "LDAP://$env:USERDNSDOMAIN"
-			    $DistinguishedName = $Searcher.FindOne().Properties.distinguishedname
-			    $Searcher.Filter = "(member:1.2.840.113556.1.4.1941:=$DistinguishedName)"
+				$Searcher = New-Object -TypeName System.DirectoryServices.DirectorySearcher
+				$Searcher.Filter = "(&(userprincipalname=$UserPrincipalName))"
+				$Searcher.SearchRoot = "LDAP://$env:USERDNSDOMAIN"
+				$DistinguishedName = $Searcher.FindOne().Properties.distinguishedname
+				$Searcher.Filter = "(member:1.2.840.113556.1.4.1941:=$DistinguishedName)"
 			
-			    [void]$Searcher.PropertiesToLoad.Add("name")
+				[void]$Searcher.PropertiesToLoad.Add("name")
 			
-			    $List = [System.Collections.Generic.List[String]]@()
+				$List = [System.Collections.Generic.List[String]]@()
 
-			    $Results = $Searcher.FindAll()
+				$Results = $Searcher.FindAll()
 			
-			    foreach ($Result in $Results) {
-				    $ResultItem = $Result.Properties
-				    [void]$List.add($ResultItem.name)
-			    }
+				foreach ($Result in $Results) {
+					$ResultItem = $Result.Properties
+					[void]$List.add($ResultItem.name)
+				}
 		
-			    $List
-            }
+				$List
+			}
 
 		}
 		catch {
@@ -109,27 +110,17 @@ if ($driveMappingConfig.GroupFilter) {
 
 if (-not (Test-RunningAsSystem)) {
 
-	try {
+	$psDrives = Get-PSDrive | Select-Object @{N = "DriveLetter"; E = { $_.Name } }, @{N = "Path"; E = { $_.DisplayRoot } }
 
-		$psDrives = Get-PSDrive | Select-Object @{N = "DriveLetter"; E = { $_.Name } }, @{N = "Path"; E = { $_.DisplayRoot } }
-	
-	}
-	catch {
-	
-		Write-Warning $_.Exception.Message
-	}
-	
 	#iterate through all network drive configuration entries
-
-	foreach ($drive in $driveMappingConfig){
+	foreach ($drive in $driveMappingConfig) {
 
 		try {
 	
-			#check if variable in unc path exists, e.g. for $env:USERNAME
+			#check if variable in unc path exists, e.g. for $env:USERNAME -> resolving
 			if ($drive.Path -match '\$env:') {
 	
-				$drive.Path = $ExecutionContext.InvokeCommand.ExpandString($drive.Path)
-				
+				$drive.Path = $ExecutionContext.InvokeCommand.ExpandString($drive.Path)	
 			}
 	
 			#if label is null we need to set it to empty in order to avoid error
@@ -142,7 +133,7 @@ if (-not (Test-RunningAsSystem)) {
 	
 				$mapDrive = $false
 
-				#check if drive exists - but with wrong config - to delete it
+				#check if drive exists - but with wrong config -> delete it
 				if ($psDrives.Path -ne $drive.Path -or $psDrives.DriveLetter -ne $drive.DriveLetter) {
 	
 					Get-PSDrive | Where-Object { $_.DisplayRoot -eq $drive.Path -or $_.Name -eq $drive.DriveLetter } | Remove-PSDrive -EA Stop
@@ -153,12 +144,13 @@ if (-not (Test-RunningAsSystem)) {
 					
 					$mapDrive = $true
 				}
-				elseif ($null -eq $drive.GroupFilter) {
+				
+				if ($null -eq $drive.GroupFilter) {
 	
 					$mapDrive = $true
 				}
 
-				if ($mapDrive){
+				if ($mapDrive) {
 					Write-Output "Mapping network drive $($drive.Path)"
 					$null = New-PSDrive -PSProvider FileSystem -Name $drive.DriveLetter -Root $drive.Path -Description $drive.Label -Persist -Scope global -EA Stop
 					(New-Object -ComObject Shell.Application).NameSpace("$($drive.DriveLetter):").Self.Name = $drive.Label
@@ -171,9 +163,10 @@ if (-not (Test-RunningAsSystem)) {
 		}
 		catch {
 			$available = Test-Path $($drive.Path)
-			if (-not $available){
+			if (-not $available) {
 				Write-Error "Unable to access path '$($drive.Path)' verify permissions and authentication!"
-			}else{
+			}
+			else {
 				Write-Error $_.Exception.Message
 			}
 		}
