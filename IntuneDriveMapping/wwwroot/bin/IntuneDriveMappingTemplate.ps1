@@ -20,7 +20,7 @@ Start-Transcript -Path $(Join-Path $env:temp "DriveMapping.log")
 # Input values from generator
 ###########################################################################################
 
-$driveMappingJson = '!INTUNEDRIVEMAPPINGJSON!'
+$driveMappingJson='!INTUNEDRIVEMAPPINGJSON!'
 
 $driveMappingConfig = $driveMappingJson | ConvertFrom-Json -ErrorAction Stop
 

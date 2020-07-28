@@ -21,7 +21,7 @@ namespace IntuneDriveMapping.Controllers
         const string poshInsertString = "!INTUNEDRIVEMAPPINGJSON!";
         const string poshTemplateName = "IntuneDriveMappingTemplate.ps1";
         const string poshExportName = "DriveMapping.ps1";
-        const string poshConfigVariable = "$driveMappingJson =";
+        const string poshConfigVariable = "$driveMappingJson=";
 
         //default view where everything comes together
         const string indexView = "Index";
