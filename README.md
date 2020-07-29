@@ -1,4 +1,4 @@
-# intune-drive-mapping-generator
+# Intune network drive mapping generator
 
 [![Build status](https://dev.azure.com/nicolonsky/ModernWorkplaceTools/_apis/build/status/intunedrivemapping%20-%20CI)](https://dev.azure.com/nicolonsky/ModernWorkplaceTools/_build/latest?definitionId=1)
 
@@ -8,6 +8,6 @@
 * Supports security group filtering (with nested groups)
 * Supports recurring execution on clients
 
-[Documentation is available on my blog](https://tech.nicolonsky.ch/next-level-network-drive-mapping-with-intune/) and in the [wiki](https://github.com/nicolonsky/IntuneDriveMapping/wiki#troubleshooting).
+Documentation is available on my [blog](https://tech.nicolonsky.ch/next-level-network-drive-mapping-with-intune/) and in the [wiki](https://github.com/nicolonsky/IntuneDriveMapping/wiki#troubleshooting).
 
 ![image](https://user-images.githubusercontent.com/32899754/88693062-21c4b980-d0ff-11ea-8e5e-adbc655fe0e6.png)
