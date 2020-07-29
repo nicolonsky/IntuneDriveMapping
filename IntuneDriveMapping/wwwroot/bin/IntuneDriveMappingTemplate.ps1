@@ -25,7 +25,7 @@ $driveMappingJson='!INTUNEDRIVEMAPPINGJSON!'
 $driveMappingConfig = $driveMappingJson | ConvertFrom-Json -ErrorAction Stop
 
 # Override with your Active Directory Domain Name e.g. 'ds.nicolonsky.ch' if you haven't configured the domain name as DHCP option
-$overrideUserDnsDomain = ""
+$searchRoot = ""
 
 ###########################################################################################
 # Helper function to determine a users group membership
@@ -42,32 +42,36 @@ function Get-ADGroupMembership {
 
 		try {
 
-			if ([string]::IsNullOrEmpty($env:USERDNSDOMAIN) -and [string]::IsNullOrEmpty($overrideUserDnsDomain)) {
+			if ([string]::IsNullOrEmpty($env:USERDNSDOMAIN) -and [string]::IsNullOrEmpty($searchRoot)) {
 				Write-Error "Security group filtering won't work because `$env:USERDNSDOMAIN is not available!"
 				Write-Warning "You can override your AD Domain in the `$overrideUserDnsDomain variable"
 			}
 			else {
 
-				$Searcher = New-Object -TypeName System.DirectoryServices.DirectorySearcher
-				$Searcher.Filter = "(&(userprincipalname=$UserPrincipalName))"
-				$Searcher.SearchRoot = "LDAP://$env:USERDNSDOMAIN"
-				$DistinguishedName = $Searcher.FindOne().Properties.distinguishedname
-				$Searcher.Filter = "(member:1.2.840.113556.1.4.1941:=$DistinguishedName)"
-			
-				[void]$Searcher.PropertiesToLoad.Add("name")
-			
-				$List = [System.Collections.Generic.List[String]]@()
+				# if no domain specified fallback to PowerShell environment variable
+				if ([string]::IsNullOrEmpty($searchRoot)){
+					$searchRoot = $env:USERDNSDOMAIN
+				}
 
-				$Results = $Searcher.FindAll()
+				$searcher = New-Object -TypeName System.DirectoryServices.DirectorySearcher
+				$searcher.Filter = "(&(userprincipalname=$UserPrincipalName))"
+				$searcher.SearchRoot = "LDAP://$searchRoot"
+				$distinguishedName = $searcher.FindOne().Properties.distinguishedname
+				$searcher.Filter = "(member:1.2.840.113556.1.4.1941:=$distinguishedName)"
 			
-				foreach ($Result in $Results) {
-					$ResultItem = $Result.Properties
-					[void]$List.add($ResultItem.name)
+				[void]$searcher.PropertiesToLoad.Add("name")
+			
+				$list = [System.Collections.Generic.List[String]]@()
+
+				$results = $searcher.FindAll()
+			
+				foreach ($result in $results) {
+					$resultItem = $result.Properties
+					[void]$List.add($resultItem.name)
 				}
 		
-				$List
+				$list
 			}
-
 		}
 		catch {
 			#Nothing we can do
@@ -141,12 +145,10 @@ if (-not (Test-RunningAsSystem)) {
 	
 				## check item level targeting for group membership
 				if ($null -ne $drive.GroupFilter -and $groupMemberships -contains $drive.GroupFilter) {
-					
 					$mapDrive = $true
 				}
 				
 				if ($null -eq $drive.GroupFilter) {
-	
 					$mapDrive = $true
 				}
 
