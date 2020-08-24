@@ -6,6 +6,8 @@
 trigger:
 - master
 
+name: $(date:yyyy).$(date:MM).$(date:dd)$(Rev:.r)
+
 pool:
   vmImage: 'windows-latest'
 
