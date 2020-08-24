@@ -26,7 +26,13 @@ stages:
       - task: NuGetCommand@2
         inputs:
           restoreSolution: '$(solution)'
-
+      - task: bleddynrichards.Assembly-Info-Task.Assembly-Info-NetCore.Assembly-Info-NetCore@2
+        displayName: 'Set Assembly Manifest Data'
+        inputs:
+          VersionNumber: '$(BUILD.BUILDNUMBER)'
+          FileVersionNumber: '$(BUILD.BUILDNUMBER)'
+          InformationalVersion: '$(BUILD.BUILDNUMBER)'
+          PackageVersion: '$(BUILD.BUILDNUMBER)'
       - task: VSBuild@1
         inputs:
           solution: '$(solution)'
