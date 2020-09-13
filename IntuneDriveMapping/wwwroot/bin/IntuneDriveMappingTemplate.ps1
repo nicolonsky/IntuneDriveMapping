@@ -20,12 +20,15 @@ Start-Transcript -Path $(Join-Path $env:temp "DriveMapping.log")
 # Input values from generator
 ###########################################################################################
 
-$driveMappingJson='!INTUNEDRIVEMAPPINGJSON!'
+$driveMappingJson = '!INTUNEDRIVEMAPPINGJSON!'
 
 $driveMappingConfig = $driveMappingJson | ConvertFrom-Json -ErrorAction Stop
 
 # Override with your Active Directory Domain Name e.g. 'ds.nicolonsky.ch' if you haven't configured the domain name as DHCP option
 $searchRoot = ""
+
+# If enabled all mounted PSdrives from filesystem except os drives get disconnected if not specified in drivemapping config
+$removeStaleDrives = $false
 
 ###########################################################################################
 # Helper function to determine a users group membership
@@ -37,7 +40,7 @@ function Get-ADGroupMembership {
 		[parameter(Mandatory = $true)]
 		[string]$UserPrincipalName
 	)
-	
+
 	process {
 
 		try {
@@ -49,7 +52,7 @@ function Get-ADGroupMembership {
 			else {
 
 				# if no domain specified fallback to PowerShell environment variable
-				if ([string]::IsNullOrEmpty($searchRoot)){
+				if ([string]::IsNullOrEmpty($searchRoot)) {
 					$searchRoot = $env:USERDNSDOMAIN
 				}
 
@@ -58,18 +61,18 @@ function Get-ADGroupMembership {
 				$searcher.SearchRoot = "LDAP://$searchRoot"
 				$distinguishedName = $searcher.FindOne().Properties.distinguishedname
 				$searcher.Filter = "(member:1.2.840.113556.1.4.1941:=$distinguishedName)"
-			
+
 				[void]$searcher.PropertiesToLoad.Add("name")
-			
+
 				$list = [System.Collections.Generic.List[String]]@()
 
 				$results = $searcher.FindAll()
-			
+
 				foreach ($result in $results) {
 					$resultItem = $result.Properties
 					[void]$List.add($resultItem.name)
 				}
-		
+
 				$list
 			}
 		}
@@ -105,7 +108,7 @@ if ($driveMappingConfig.GroupFilter) {
 	}
 	catch {
 		#nothing we can do
-	}	 
+	}
 }
 ###########################################################################################
 # Mapping network drives
@@ -114,40 +117,48 @@ if ($driveMappingConfig.GroupFilter) {
 
 if (-not (Test-RunningAsSystem)) {
 
-	$psDrives = Get-PSDrive | Select-Object @{N = "DriveLetter"; E = { $_.Name } }, @{N = "Path"; E = { $_.DisplayRoot } }
+	$psDrives = Get-PSDrive | Where-Object { $_.Provider.Name -eq "FileSystem" -and $_.Root -notin @("$env:SystemDrive\") } | Select-Object @{N = "DriveLetter"; E = { $_.Name } }, @{N = "Path"; E = { $_.DisplayRoot } }
+
+	$drivesToMap = @()
 
 	#iterate through all network drive configuration entries
 	foreach ($drive in $driveMappingConfig) {
 
 		try {
-	
+
 			#check if variable in unc path exists, e.g. for $env:USERNAME -> resolving
 			if ($drive.Path -match '\$env:') {
-	
-				$drive.Path = $ExecutionContext.InvokeCommand.ExpandString($drive.Path)	
+
+				$drive.Path = $ExecutionContext.InvokeCommand.ExpandString($drive.Path)
 			}
-	
+
 			#if label is null we need to set it to empty in order to avoid error
 			if ($null -eq $drive.Label) {
 				$drive.Label = ""
 			}
-			
-			#check if the drive is already connected with an identical configuration
-			if ( -not ($psDrives.Path -contains $drive.Path -and $psDrives.DriveLetter -contains $drive.DriveLetter)) {
-	
+
+
+			$exists = $psDrives | Where-Object { $_.DisplayRoot -eq $drive.Path -or $_.Name -eq $drive.DriveLetter }
+			$process = $false
+
+			if ($null -ne $exists -and $($_.DisplayRoot -eq $drive.Path -and $_.Name -eq $drive.DriveLetter)) {
+				Write-Output "Drive '$($drive.DriveLetter):\' '$($drive.Path)' already exists with correct Drive Letter and Path"
+			}
+			else {
+				# Mapped with wrong config -> Delete it
+				Get-PSDrive | Where-Object { $_.DisplayRoot -eq $drive.Path -or $_.Name -eq $drive.DriveLetter } | Remove-PSDrive -EA SilentlyContinue
+				$process = $true
+			}
+
+			if ($process) {
+
 				$mapDrive = $false
 
-				#check if drive exists - but with wrong config -> delete it
-				if ($psDrives.Path -ne $drive.Path -or $psDrives.DriveLetter -ne $drive.DriveLetter) {
-	
-					Get-PSDrive | Where-Object { $_.DisplayRoot -eq $drive.Path -or $_.Name -eq $drive.DriveLetter } | Remove-PSDrive -EA Stop
-				}
-	
 				## check item level targeting for group membership
 				if ($null -ne $drive.GroupFilter -and $groupMemberships -contains $drive.GroupFilter) {
 					$mapDrive = $true
 				}
-				
+
 				if ($null -eq $drive.GroupFilter) {
 					$mapDrive = $true
 				}
@@ -156,11 +167,9 @@ if (-not (Test-RunningAsSystem)) {
 					Write-Output "Mapping network drive $($drive.Path)"
 					$null = New-PSDrive -PSProvider FileSystem -Name $drive.DriveLetter -Root $drive.Path -Description $drive.Label -Persist -Scope global -EA Stop
 					(New-Object -ComObject Shell.Application).NameSpace("$($drive.DriveLetter):").Self.Name = $drive.Label
+
+					$drivesToMap += $drive
 				}
-			}
-			else {
-					
-				Write-Output "Drive '$($drive.DriveLetter):\' '$($drive.Path)' already exists with correct Drive Letter and Path"
 			}
 		}
 		catch {
@@ -172,9 +181,17 @@ if (-not (Test-RunningAsSystem)) {
 				Write-Error $_.Exception.Message
 			}
 		}
+
+		# Remove unassigned drives
+		if ($removeStaleDrives) {
+			$diff = Compare-Object -ReferenceObject $drivesToMap -DifferenceObject $psDrives -Property "DriveLetter" -PassThru
+			foreach ($unassignedDrive in $diff) {
+				Write-Warning "Drive '$($unassignedDrive.DriveLetter)' has not been assigned - removing it..."
+				Remove-SmbMapping -LocalPath "$($unassignedDrive.DriveLetter):" -Force -UpdateProfile
+			}
+		}
 	}
 
-	
 	# Fix to ensure drives are mapped as persistent!
 	$null = Get-ChildItem -Path HKCU:\Network -ErrorAction SilentlyContinue | ForEach-Object { New-ItemProperty -Name ConnectionType -Value 1 -Path $_.PSPath -Force -ErrorAction SilentlyContinue }
 }
@@ -205,7 +222,7 @@ if (Test-RunningAsSystem) {
 	###########################################################################################
 
 	$currentScript = Get-Content -Path $($PSCommandPath)
-	
+
 	$schtaskScript = $currentScript[(0) .. ($currentScript.IndexOf("#!SCHTASKCOMESHERE!#") - 1)]
 
 	$scriptSavePath = $(Join-Path -Path $env:ProgramData -ChildPath "intune-drive-mapping-generator")
@@ -235,8 +252,8 @@ if (Test-RunningAsSystem) {
 
 	If fso.FileExists(strPath) Then
 		set file=fso.GetFile(strPath)
-		strCMD=`"powershell -nologo -executionpolicy ByPass -command `" & Chr(34) & `"&{`" &_ 
-		file.ShortPath & `"}`" & Chr(34) 
+		strCMD=`"powershell -nologo -executionpolicy ByPass -command `" & Chr(34) & `"&{`" &_
+		file.ShortPath & `"}`" & Chr(34)
 		shell.Run strCMD,0
 	End If
 	"
@@ -244,7 +261,7 @@ if (Test-RunningAsSystem) {
 	$scriptSavePathName = "IntuneDriveMapping-VBSHelper.vbs"
 
 	$dummyScriptPath = $(Join-Path -Path $scriptSavePath -ChildPath $scriptSavePathName)
-	
+
 	$vbsDummyScript | Out-File -FilePath $dummyScriptPath -Force
 
 	$wscriptPath = Join-Path $env:SystemRoot -ChildPath "System32\wscript.exe"
@@ -262,7 +279,7 @@ if (Test-RunningAsSystem) {
 	#call the vbscript helper and pass the PosH script as argument
 	$action = New-ScheduledTaskAction -Execute $wscriptPath -Argument "`"$dummyScriptPath`" `"$scriptPath`""
 	$settings = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries
-	
+
 	$null = Register-ScheduledTask -TaskName $schtaskName -Trigger $trigger -Action $action  -Principal $principal -Settings $settings -Description $schtaskDescription -Force
 
 	Start-ScheduledTask -TaskName $schtaskName
