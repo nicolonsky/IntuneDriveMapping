@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using System.Text;
 using System.IO;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace IntuneDriveMapping.Controllers
 {
@@ -22,6 +23,7 @@ namespace IntuneDriveMapping.Controllers
         const string poshTemplateName = "IntuneDriveMappingTemplate.ps1";
         const string poshExportName = "DriveMapping.ps1";
         const string poshConfigVariable = "$driveMappingJson=";
+        const string poshremoveStaleDrives = "$removeStaleDrives = $false";
 
         //default view where everything comes together
         const string indexView = "Index";
@@ -82,9 +84,10 @@ namespace IntuneDriveMapping.Controllers
                     }
                     else
                     {
-                        List<DriveMappingModel> driveMappings = new List<DriveMappingModel>();
-
-                        driveMappings.Add(driveMapping);
+                        List<DriveMappingModel> driveMappings = new List<DriveMappingModel>
+                        {
+                            driveMapping
+                        };
 
                         HttpContext.Session.SetString(sessionName, JsonConvert.SerializeObject(driveMappings.OrderBy(entry => entry.Id)));
                     }
@@ -336,24 +339,29 @@ namespace IntuneDriveMapping.Controllers
             }
             catch (Exception ex)
             {
-                HttpContext.Session.SetString(errosSession, ex.Message.ToString());
+                HttpContext.Session.SetString(errosSession, ex.StackTrace.ToString());
 
                 return RedirectToAction(indexView);
             }
         }
 
-        public ActionResult Download()
+        [HttpPost]
+        public ActionResult Download(bool removeStaleDrives)
         {
             try
             {
                 if (HttpContext.Session.GetString(sessionName)!=null)
                 {
-
                     //load the PowerShell template and replace values with generated configuration
 
                     string poshTemplate = System.IO.File.ReadAllText(@"wwwroot/bin/" + poshTemplateName);
 
                     poshTemplate = poshTemplate.Replace(poshInsertString, HttpContext.Session.GetString(sessionName));
+
+                    if (removeStaleDrives)
+                    {
+                        poshTemplate = poshTemplate.Replace(poshremoveStaleDrives, poshremoveStaleDrives.Replace("false","true"));
+                    }
 
                     //return file download
                     return File(Encoding.UTF8.GetBytes(poshTemplate), "default/text", poshExportName);
