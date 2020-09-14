@@ -2,7 +2,7 @@
 
 <script src="~/vendor.min.js"></script>
 
-<h2>Generator</h2>
+<h2 class="mt-5">Generator</h2>
 
 @if (ViewBag.ShowList != true)
 {
@@ -10,7 +10,6 @@
     <h4 style="font-family: monospace;">Upload your exported group policy configuration or start from scratch</h4>
     @if (ViewBag.Error != null)
     {
-        <br />
         <div class="alert alert-danger alert-dismissible" role="alert">
             <strong>Error: </strong>@ViewBag.Error
             <button type="button" class="close" data-dismiss="alert" aria-label="Close">
@@ -66,7 +65,6 @@
 @if (ViewBag.ShowList)
 {
     <h4 style="font-family: monospace;">Adjust your drivemapping configuration</h4>
-    <br />
     if (@ViewBag.Error != null)
     {
         <div class="alert alert-danger alert-dismissible show fade" role="alert">
@@ -76,7 +74,7 @@
             </button>
         </div>
     }
-    <table class="table">
+    <table class="table mt-4">
         <thead>
             <tr>
                 <th>
@@ -127,7 +125,7 @@
             <div class="form-group">
                 <input type="button" class="btn btn-danger float-right mr-1" value="Start over" data-toggle="modal" data-target="#startOverModal" />
                 <input type="button" class="btn btn-success float-right mr-1" value="Add entry" onclick="location.href='@Url.Action("Create", "DriveMapping")'" />
-                <input type="submit" class="btn btn-primary" value="Download PowerShell script" />
+                <input type="submit" class="btn btn-primary" value="Download PowerShell Script" />
             </div>
         </form>
     </div>

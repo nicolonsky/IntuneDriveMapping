@@ -11,16 +11,16 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Create" class="needs-validation">
+        <form asp-action="Create" class="needs-validation" autocomplete="off">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="Path" class="control-label"></label>
-                <input asp-for="Path" class="form-control" />
+                <input asp-for="Path" class="form-control" data-toggle="tooltip" data-placement="top" title="Tooltip on top" />
                 <span asp-validation-for="Path" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="DriveLetter" class="control-label"></label>
-                <input asp-for="DriveLetter" class="form-control" />
+                @Html.DropDownListFor(m => m.DriveLetter, DriveLetter.GetDriveLetters(), new { @class = "form-control" })
                 <span asp-validation-for="DriveLetter" class="text-danger"></span>
             </div>
             <div class="form-group">

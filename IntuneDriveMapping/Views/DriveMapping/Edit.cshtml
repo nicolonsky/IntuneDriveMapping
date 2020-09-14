@@ -8,7 +8,7 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Edit">
+        <form asp-action="Edit" autocomplete="off">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
                 <label asp-for="Path" class="control-label"></label>
@@ -17,8 +17,8 @@
             </div>
             <div class="form-group">
                 <label asp-for="DriveLetter" class="control-label"></label>
-                <input asp-for="DriveLetter" class="form-control" />
-                <span asp-validation-for="DriveLetter" class="text-danger"></span>
+                @Html.DropDownListFor(m => m.DriveLetter, DriveLetter.GetDriveLetters(), new { @class = "form-control" })
+            <span asp-validation-for="Label" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Label" class="control-label"></label>
