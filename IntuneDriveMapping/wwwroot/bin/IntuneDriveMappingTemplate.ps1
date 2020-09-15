@@ -117,21 +117,18 @@ if ($driveMappingConfig.GroupFilter) {
 
 if (-not (Test-RunningAsSystem)) {
 
-	$psDrives = Get-PSDrive | Where-Object { $_.Provider.Name -eq "FileSystem" -and $_.Root -notin @("$env:SystemDrive\", "D:\") } | Select-Object @{N = "DriveLetter"; E = { $_.Name } }, @{N = "Path"; E = { $_.DisplayRoot } }
+	$psDrives = Get-PSDrive | Where-Object { $_.Provider.Name -eq "FileSystem" -and $_.Root -notin @("$env:SystemDrive\", "D:\") } `
+	| Select-Object @{N = "DriveLetter"; E = { $_.Name } }, @{N = "Path"; E = { $_.DisplayRoot } }
 
 	# only map drives where group membership applicable
 	$driveMappingConfig = $driveMappingConfig | Where-Object { $groupMemberships -contains $_.GroupFilter -or $_.GroupFilter -eq $null }
-
-	$drivesToMap = @()
 
 	#iterate through all network drive configuration entries
 	foreach ($drive in $driveMappingConfig) {
 
 		try {
-
 			#check if variable in unc path exists, e.g. for $env:USERNAME -> resolving
 			if ($drive.Path -match '\$env:') {
-
 				$drive.Path = $ExecutionContext.InvokeCommand.ExpandString($drive.Path)
 			}
 
@@ -140,39 +137,23 @@ if (-not (Test-RunningAsSystem)) {
 				$drive.Label = ""
 			}
 
-
-			$exists = $psDrives | Where-Object { $_.Path -eq $drive.Path -or $_.DriveLetter -eq $drive.DriveLetter -and $groupMemberships -contains $drive.GroupFilter }
-			$process = $false
+			$exists = $psDrives | Where-Object { $_.Path -eq $drive.Path -or $_.DriveLetter -eq $drive.DriveLetter }
+			$process = $true
 
 			if ($null -ne $exists -and $($exists.Path -eq $drive.Path -and $exists.DriveLetter -eq $drive.DriveLetter )) {
 				Write-Output "Drive '$($drive.DriveLetter):\' '$($drive.Path)' already exists with correct Drive Letter and Path"
+				$process = $false
 
 			}
 			else {
 				# Mapped with wrong config -> Delete it
 				Get-PSDrive | Where-Object { $_.DisplayRoot -eq $drive.Path -or $_.Name -eq $drive.DriveLetter } | Remove-PSDrive -EA SilentlyContinue
-				$process = $true
 			}
 
 			if ($process) {
-
-				$mapDrive = $false
-
-				## check item level targeting for group membership
-				if ($null -ne $drive.GroupFilter -and $groupMemberships -contains $drive.GroupFilter) {
-					$mapDrive = $true
-				}
-
-				if ($null -eq $drive.GroupFilter) {
-					$mapDrive = $true
-				}
-
-				if ($mapDrive) {
-					Write-Output "Mapping network drive $($drive.Path)"
-					$drivesToMap += $drive
-					$null = New-PSDrive -PSProvider FileSystem -Name $drive.DriveLetter -Root $drive.Path -Description $drive.Label -Persist -Scope global -EA Stop
-					(New-Object -ComObject Shell.Application).NameSpace("$($drive.DriveLetter):").Self.Name = $drive.Label
-				}
+				Write-Output "Mapping network drive $($drive.Path)"
+				$null = New-PSDrive -PSProvider FileSystem -Name $drive.DriveLetter -Root $drive.Path -Description $drive.Label -Persist -Scope global -EA Stop
+				(New-Object -ComObject Shell.Application).NameSpace("$($drive.DriveLetter):").Self.Name = $drive.Label
 			}
 		}
 		catch {
@@ -188,7 +169,7 @@ if (-not (Test-RunningAsSystem)) {
 
 	# Remove unassigned drives
 	if ($removeStaleDrives -and $null -ne $psDrives) {
-		$diff = Compare-Object -ReferenceObject $drivesToMap -DifferenceObject $psDrives -Property "DriveLetter" -PassThru | Where-Object { $_.SideIndicator -eq "=>" }
+		$diff = Compare-Object -ReferenceObject $driveMappingConfig -DifferenceObject $psDrives -Property "DriveLetter" -PassThru | Where-Object { $_.SideIndicator -eq "=>" }
 		foreach ($unassignedDrive in $diff) {
 			Write-Warning "Drive '$($unassignedDrive.DriveLetter)' has not been assigned - removing it..."
 			Remove-SmbMapping -LocalPath "$($unassignedDrive.DriveLetter):" -Force -UpdateProfile
