@@ -63,6 +63,13 @@ namespace IntuneDriveMapping.Controllers
             return PartialView("_Create");
         }
 
+        public ActionResult Init()
+        {
+            List<DriveMappingModel> driveMappings = new List<DriveMappingModel>();
+            HttpContext.Session.SetString(sessionName, JsonConvert.SerializeObject(driveMappings));
+            return RedirectToAction(indexView);
+        }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Create(DriveMappingModel driveMapping)
@@ -76,18 +83,9 @@ namespace IntuneDriveMapping.Controllers
                     {
                         List<DriveMappingModel> driveMappings = JsonConvert.DeserializeObject<List<DriveMappingModel>>(HttpContext.Session.GetString(sessionName));
 
-                        driveMapping.Id = driveMappings.Last().Id + 1;
+                        driveMapping.Id = driveMappings.Count + 1;
 
                         driveMappings.Add(driveMapping);
-
-                        HttpContext.Session.SetString(sessionName, JsonConvert.SerializeObject(driveMappings.OrderBy(entry => entry.Id)));
-                    }
-                    else
-                    {
-                        List<DriveMappingModel> driveMappings = new List<DriveMappingModel>
-                        {
-                            driveMapping
-                        };
 
                         HttpContext.Session.SetString(sessionName, JsonConvert.SerializeObject(driveMappings.OrderBy(entry => entry.Id)));
                     }
