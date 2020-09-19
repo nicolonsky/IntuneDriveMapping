@@ -60,7 +60,7 @@ namespace IntuneDriveMapping.Controllers
         }
         public ActionResult Create()
         {
-            return View();
+            return PartialView("_Create");
         }
 
         [HttpPost]
@@ -94,7 +94,7 @@ namespace IntuneDriveMapping.Controllers
                 }
                 else
                 {
-                    return View();
+                    return PartialView("_Create", driveMapping);
                 }
 
                 return RedirectToAction(indexView);
@@ -116,7 +116,6 @@ namespace IntuneDriveMapping.Controllers
             try
             {
                 var file = Request.Form.Files[0];
-
 
                 if (file.FileName.Contains(".ps1"))
                 {
@@ -238,7 +237,8 @@ namespace IntuneDriveMapping.Controllers
                 }
                 else
                 {
-                    return View(driveMappingEntry);
+                    
+                    return PartialView("_Edit", driveMappingEntry);
                 }
             }
 
@@ -280,7 +280,7 @@ namespace IntuneDriveMapping.Controllers
                 }
                 else
                 {
-                    return View();
+                    return PartialView("_Edit", driveMapping);
 
                 }
 
@@ -295,6 +295,7 @@ namespace IntuneDriveMapping.Controllers
             }
         }
 
+        [HttpGet]
         public ActionResult Delete(int? Id)
         {
             try
@@ -310,7 +311,7 @@ namespace IntuneDriveMapping.Controllers
                 }
                 else
                 {
-                    return View(driveMappingEntry);
+                    return PartialView("_Delete", driveMappingEntry);
                 }
             }
             catch (Exception ex)

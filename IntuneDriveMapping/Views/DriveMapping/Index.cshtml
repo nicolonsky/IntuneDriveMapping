@@ -6,60 +6,60 @@
 
 @if (ViewBag.ShowList != true)
 {
-<form class="upload_file" asp-action="Upload" asp-controller="DriveMapping" method="post" enctype="multipart/form-data">
-    <h4 style="font-family: monospace;">Upload your exported group policy configuration or start from scratch</h4>
-    @if (ViewBag.Error != null)
-    {
-        <div class="alert alert-danger alert-dismissible" role="alert">
-            <strong>Error: </strong>@ViewBag.Error
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-    }
-    <div class="form-group">
-        <div class="input-group input-file" name="fileuploader">
-            <input type="text" class="form-control mr-1" id="fileUpload" name="fileUpload" placeholder="Choose a file..." />
-            <span class="input-group-btn">
-                <button class="btn btn-outline-primary btn-choose" type="button">Choose</button>
-            </span>
-        </div>
-    </div>
-    <script>
-        function bs_input_file() {
-            $(".input-file").before(
-                function () {
-                    if (!$(this).prev().hasClass('input-ghost')) {
-                        var element = $("<input type='file' class='input-ghost' accept='.xml,.ps1' style='visibility:hidden; height:0'>");
-                        element.attr("name", $(this).attr("name"));
-                        element.change(function () {
-                            element.next(element).find('input').val((element.val()).split('\\').pop());
-                        });
-                        $(this).find("button.btn-choose").click(function () {
-                            element.click();
-                        });
-                        $(this).find("button.btn-reset").click(function () {
-                            element.val(null);
-                            $(this).parents(".input-file").find('input').val('');
-                        });
-                        $(this).find('input').css("cursor", "pointer");
-                        $(this).find('input').mousedown(function () {
-                            $(this).parents('.input-file').prev().click();
-                            return false;
-                        });
-                        return element;
-                    }
-                }
-            );
+    <form class="upload_file" asp-action="Upload" asp-controller="DriveMapping" method="post" enctype="multipart/form-data">
+        <h4 style="font-family: monospace;">Upload your exported group policy configuration or start from scratch</h4>
+        @if (ViewBag.Error != null)
+        {
+            <div class="alert alert-danger alert-dismissible" role="alert">
+                <strong>Error: </strong>@ViewBag.Error
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
         }
-        $(function () {
-            bs_input_file();
-        });
-    </script>
-    <input type="submit" class="btn btn-primary pull-left" value="Upload" />
-    <input type="button" class="btn btn-success pull-left" value="Build from scratch" onclick="location.href='@Url.Action("Create", "DriveMapping")'" />
-</form>
-    
+        <div class="form-group">
+            <div class="input-group input-file" name="fileuploader">
+                <input type="text" class="form-control mr-1" id="fileUpload" name="fileUpload" placeholder="Choose a file..." />
+                <span class="input-group-btn">
+                    <button class="btn btn-outline-primary btn-choose" type="button">Choose</button>
+                </span>
+            </div>
+        </div>
+        <script>
+            function bs_input_file() {
+                $(".input-file").before(
+                    function () {
+                        if (!$(this).prev().hasClass('input-ghost')) {
+                            var element = $("<input type='file' class='input-ghost' accept='.xml,.ps1' style='visibility:hidden; height:0'>");
+                            element.attr("name", $(this).attr("name"));
+                            element.change(function () {
+                                element.next(element).find('input').val((element.val()).split('\\').pop());
+                            });
+                            $(this).find("button.btn-choose").click(function () {
+                                element.click();
+                            });
+                            $(this).find("button.btn-reset").click(function () {
+                                element.val(null);
+                                $(this).parents(".input-file").find('input').val('');
+                            });
+                            $(this).find('input').css("cursor", "pointer");
+                            $(this).find('input').mousedown(function () {
+                                $(this).parents('.input-file').prev().click();
+                                return false;
+                            });
+                            return element;
+                        }
+                    }
+                );
+            }
+            $(function () {
+                bs_input_file();
+            });
+        </script>
+        <input type="submit" class="btn btn-primary pull-left" value="Upload" />
+        <input type="button" class="btn btn-success pull-left" value="Build from scratch" onclick="location.href='@Url.Action("Create", "DriveMapping")'" />
+    </form>
+
 }
 
 @if (ViewBag.ShowList)
@@ -109,8 +109,8 @@
                         @Html.DisplayFor(modelItem => item.GroupFilter)
                     </td>
                     <td>
-                        @Html.ActionLink("Edit", "Edit", new { Id = item.Id }) |
-                        @Html.ActionLink("Delete", "Delete", new { Id = item.Id })
+                        <a href="javascript:void(0);" class="anchorDetail" data-id="@item.Id">Edit</a> |
+                        <a href="javascript:void(0);" class="anchorDetail2" data-id="@item.Id">Delete</a>
                     </td>
                 </tr>
             }
@@ -124,7 +124,7 @@
             </div>
             <div class="form-group">
                 <input type="button" class="btn btn-danger float-right mr-1" value="Start over" data-toggle="modal" data-target="#startOverModal" />
-                <input type="button" class="btn btn-success float-right mr-1" value="Add entry" onclick="location.href='@Url.Action("Create", "DriveMapping")'" />
+                <input type="button" class="btn btn-success float-right mr-1 anchorDetail3" value="Add entry" onclick="location.href='javascript:void(0);'" />
                 <input type="submit" class="btn btn-primary" value="Download PowerShell Script" />
             </div>
         </form>
@@ -150,6 +150,94 @@
             </div>
         </div>
     </div>
+
+    <!-- View -->
+    <div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" id="myModal" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Edit entry</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="myModalContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        var URL = '/DriveMapping/Edit';
+        $(function () {
+            $(".anchorDetail").click(function () {
+                debugger;
+                var $buttonClicked = $(this);
+                var id = $buttonClicked.attr('data-id');
+
+                $.ajax({
+                    type: "GET",
+                    url: URL,
+                    data: { "Id": id },
+                    datatype: "text/html",
+                    success: function (data) {
+                        debugger;
+                        $('#myModalContent').html(data);
+                        $('#myModal').modal('show');
+                        $('#myModal').find('.modal-title').text('Edit entry')
+                    },
+                    error: function () {
+                        alert("Dynamic content load failed.");
+                    }
+                });
+            });
+
+            $(".anchorDetail2").click(function () {
+                URL = '/DriveMapping/Delete';
+                debugger;
+                var $buttonClicked = $(this);
+                var id = $buttonClicked.attr('data-id');
+
+                $.ajax({
+                    type: "GET",
+                    url: URL,
+                    data: { "Id": id },
+                    datatype: "text/html",
+                    success: function (data) {
+                        debugger;
+                        $('#myModalContent').html(data);
+                        $('#myModal').find('.modal-title').text('U sure to delete this?')
+                        $('#myModal').modal('show');
+                    },
+                    error: function () {
+                        alert("Dynamic content load failed.");
+                    }
+                });
+            });
+
+            $(".anchorDetail3").click(function () {
+                URL = '/DriveMapping/Create';
+                debugger;
+                var $buttonClicked = $(this);
+                var id = $buttonClicked.attr('data-id');
+
+                $.ajax({
+                    type: "GET",
+                    url: URL,
+                    data: { "Id": id },
+                    datatype: "text/html",
+                    success: function (data) {
+                        debugger;
+                        $('#myModalContent').html(data);
+                        $('#myModal').find('.modal-title').text('Add entry')
+                        $('#myModal').modal('show');
+                    },
+                    error: function (data) {
+                        $('#myModalContent').html(data);
+                    }
+                });
+            });
+        });
+    </script>
 }
 
 

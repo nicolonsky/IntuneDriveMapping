@@ -1,15 +1,13 @@
 ﻿@model IntuneDriveMapping.Models.DriveMappingModel
-@{
-    ViewData["Title"] = "Edit-";
-    Layout = "~/Views/Shared/_Layout.cshtml";
-}
-<h2>Edit</h2>
-<h4>Network drive mapping</h4>
-<hr />
+
 <div class="row">
-    <div class="col-md-4">
+    <div class="col">
         <form asp-action="Edit" autocomplete="off">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <div class="form-group d-none">
+                <label asp-for="Id" class="control-label"></label>
+                <input asp-for="Id" class="form-control" readonly />
+            </div>
             <div class="form-group">
                 <label asp-for="Path" class="control-label"></label>
                 <input asp-for="Path" class="form-control" />
@@ -18,7 +16,7 @@
             <div class="form-group">
                 <label asp-for="DriveLetter" class="control-label"></label>
                 @Html.DropDownListFor(m => m.DriveLetter, DriveLetter.GetDriveLetters(), new { @class = "form-control" })
-            <span asp-validation-for="Label" class="text-danger"></span>
+                <span asp-validation-for="Label" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Label" class="control-label"></label>
@@ -35,7 +33,4 @@
             </div>
         </form>
     </div>
-</div>
-<div>
-    <a asp-action="Index">Back to List</a>
 </div>
