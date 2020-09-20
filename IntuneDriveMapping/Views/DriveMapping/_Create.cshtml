@@ -1,0 +1,46 @@
+﻿@model IntuneDriveMapping.Models.DriveMappingModel
+
+
+<div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" id="createDriveMapping" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Add entry</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form asp-action="Create" class="needs-validation" autocomplete="off">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <input name="IsValid" type="hidden" value="@ViewData.ModelState.IsValid.ToString()" />
+                    <div class="form-group">
+                        <label asp-for="Path" class="control-label"></label>
+                        <input asp-for="Path" class="form-control"/>
+                        <span asp-validation-for="Path" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="DriveLetter" class="control-label"></label>
+                        @Html.DropDownListFor(m => m.DriveLetter, DriveLetter.GetDriveLetters(), new { @class = "form-control" })
+                        <span asp-validation-for="DriveLetter" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Label" class="control-label"></label>
+                        <input asp-for="Label" class="form-control" />
+                        <span asp-validation-for="Label" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="GroupFilter" class="control-label"></label>
+                        <input asp-for="GroupFilter" class="form-control" />
+                        <span asp-validation-for="GroupFilter" class="text-danger"></span>
+                    </div>
+                    <div class="form-group">
+                        <button type="button" class="btn btn-primary" data-save="modal">Save</button>
+                    </div>
+                </form>
+            </div>
+            
+        </div>
+    </div>
+</div>
+

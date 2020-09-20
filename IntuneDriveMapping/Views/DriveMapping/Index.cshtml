@@ -6,63 +6,62 @@
 
 @if (ViewBag.ShowList != true)
 {
-<form class="upload_file" asp-action="Upload" asp-controller="DriveMapping" method="post" enctype="multipart/form-data">
-    <h4 style="font-family: monospace;">Upload your exported group policy configuration or start from scratch</h4>
-    @if (ViewBag.Error != null)
-    {
-        <div class="alert alert-danger alert-dismissible" role="alert">
-            <strong>Error: </strong>@ViewBag.Error
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-    }
-    <div class="form-group">
-        <div class="input-group input-file" name="fileuploader">
-            <input type="text" class="form-control mr-1" id="fileUpload" name="fileUpload" placeholder="Choose a file..." />
-            <span class="input-group-btn">
-                <button class="btn btn-outline-primary btn-choose" type="button">Choose</button>
-            </span>
-        </div>
-    </div>
-    <script>
-        function bs_input_file() {
-            $(".input-file").before(
-                function () {
-                    if (!$(this).prev().hasClass('input-ghost')) {
-                        var element = $("<input type='file' class='input-ghost' accept='.xml,.ps1' style='visibility:hidden; height:0'>");
-                        element.attr("name", $(this).attr("name"));
-                        element.change(function () {
-                            element.next(element).find('input').val((element.val()).split('\\').pop());
-                        });
-                        $(this).find("button.btn-choose").click(function () {
-                            element.click();
-                        });
-                        $(this).find("button.btn-reset").click(function () {
-                            element.val(null);
-                            $(this).parents(".input-file").find('input').val('');
-                        });
-                        $(this).find('input').css("cursor", "pointer");
-                        $(this).find('input').mousedown(function () {
-                            $(this).parents('.input-file').prev().click();
-                            return false;
-                        });
-                        return element;
-                    }
-                }
-            );
+    <form class="upload_file" asp-action="Upload" asp-controller="DriveMapping" method="post" enctype="multipart/form-data">
+        <h4 style="font-family: monospace;">Upload your exported group policy configuration or start from scratch</h4>
+        @if (ViewBag.Error != null)
+        {
+            <div class="alert alert-danger alert-dismissible" role="alert">
+                <strong>Error: </strong>@ViewBag.Error
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
         }
-        $(function () {
-            bs_input_file();
-        });
-    </script>
-    <input type="submit" class="btn btn-primary pull-left" value="Upload" />
-    <input type="button" class="btn btn-success pull-left" value="Build from scratch" onclick="location.href='@Url.Action("Create", "DriveMapping")'" />
-</form>
-    
-}
+        <div class="form-group">
+            <div class="input-group input-file" name="fileuploader">
+                <input type="text" class="form-control mr-1" id="fileUpload" name="fileUpload" placeholder="Choose a file..." />
+                <span class="input-group-btn">
+                    <button class="btn btn-outline-primary btn-choose" type="button">Choose</button>
+                </span>
+            </div>
+        </div>
+        <script>
+            function bs_input_file() {
+                $(".input-file").before(
+                    function () {
+                        if (!$(this).prev().hasClass('input-ghost')) {
+                            var element = $("<input type='file' class='input-ghost' accept='.xml,.ps1' style='visibility:hidden; height:0'>");
+                            element.attr("name", $(this).attr("name"));
+                            element.change(function () {
+                                element.next(element).find('input').val((element.val()).split('\\').pop());
+                            });
+                            $(this).find("button.btn-choose").click(function () {
+                                element.click();
+                            });
+                            $(this).find("button.btn-reset").click(function () {
+                                element.val(null);
+                                $(this).parents(".input-file").find('input').val('');
+                            });
+                            $(this).find('input').css("cursor", "pointer");
+                            $(this).find('input').mousedown(function () {
+                                $(this).parents('.input-file').prev().click();
+                                return false;
+                            });
+                            return element;
+                        }
+                    }
+                );
+            }
+            $(function () {
+                bs_input_file();
+            });
+        </script>
+        <input type="submit" class="btn btn-primary pull-left" value="Upload" />
+        <input type="button" class="btn btn-success pull-left" value="Build from scratch" onclick="location.href='@Url.Action("Init", "DriveMapping")'" />
+    </form>
 
-@if (ViewBag.ShowList)
+}
+else
 {
     <h4 style="font-family: monospace;">Adjust your drivemapping configuration</h4>
     if (@ViewBag.Error != null)
@@ -74,48 +73,9 @@
             </button>
         </div>
     }
-    <table class="table mt-4">
-        <thead>
-            <tr>
-                <th>
-                    @Html.DisplayNameFor(model => model.DriveLetter)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Path)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Label)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.GroupFilter)
-                </th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
-            {
-                <tr>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.DriveLetter)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Path)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Label)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.GroupFilter)
-                    </td>
-                    <td>
-                        @Html.ActionLink("Edit", "Edit", new { Id = item.Id }) |
-                        @Html.ActionLink("Delete", "Delete", new { Id = item.Id })
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+
+    @await Html.PartialAsync("_Table", Model)
+
     <div class="mt-2">
         <form asp-controller="DriveMapping" asp-action="Download" method="post">
             <div class="form-check mb-1">
@@ -123,34 +83,12 @@
                 <label class="form-check-label" for="removeStaleDrives">remove stale drives</label>
             </div>
             <div class="form-group">
-                <input type="button" class="btn btn-danger float-right mr-1" value="Start over" data-toggle="modal" data-target="#startOverModal" />
-                <input type="button" class="btn btn-success float-right mr-1" value="Add entry" onclick="location.href='@Url.Action("Create", "DriveMapping")'" />
-                <input type="submit" class="btn btn-primary" value="Download PowerShell Script" />
+                <button type="button" class="btn btn-danger float-right mr-1" data-toggle="ajax-modal" data-target="#startOverModal" data-url="@Url.Action("Reset")">Start over</button>
+                <button type="button" class="btn btn-success float-right mr-1" data-toggle="ajax-modal" data-target="#createDriveMapping" data-url="@Url.Action("Create")">Add entry</button>
+                <button class="btn btn-primary">Download PowerShell Script</button>
             </div>
         </form>
     </div>
 
-    <!-- Modal for start over (clear session)-->
-    <div class="modal fade" id="startOverModal" tabindex="-1" role="dialog" aria-labelledby="startOverModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="startOverModalLabel">Are you sure want to start over?</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <p>All configuration and uploaded data will be cleared.</p>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                    <input type="button" class="btn btn-danger float-right mr-1" value="Start over" onclick="location.href='@Url.Action("ResetSession", "DriveMapping")'" />
-                </div>
-            </div>
-        </div>
-    </div>
+    <div id="modal-placeholder"></div>
 }
-
-
-

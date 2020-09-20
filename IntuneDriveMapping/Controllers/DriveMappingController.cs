@@ -48,65 +48,48 @@ namespace IntuneDriveMapping.Controllers
             {
                 return View();
             }
-
             else 
             {
                 List<DriveMappingModel> driveMappings = JsonConvert.DeserializeObject<List<DriveMappingModel>>(HttpContext.Session.GetString(sessionName));
-
                 ViewBag.ShowList = true;
+
+                var isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest";
+                if (isAjax)
+                {
+                    return PartialView("_Table", driveMappings);
+                }
 
                 return View(driveMappings);
             }
+
+           
         }
         public ActionResult Create()
         {
-            return View();
+            return PartialView("_Create");
+        }
+
+        public ActionResult Init()
+        {
+            List<DriveMappingModel> driveMappings = new List<DriveMappingModel>();
+            HttpContext.Session.SetString(sessionName, JsonConvert.SerializeObject(driveMappings));
+            return RedirectToAction(indexView);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Create(DriveMappingModel driveMapping)
         {
-            try
+            if (ModelState.IsValid)
             {
-                if (ModelState.IsValid)
-                {
-                    //check if first ever item is addedd or list with entries already exists
-                    if (HttpContext.Session.GetString(sessionName) != null)
-                    {
-                        List<DriveMappingModel> driveMappings = JsonConvert.DeserializeObject<List<DriveMappingModel>>(HttpContext.Session.GetString(sessionName));
-
-                        driveMapping.Id = driveMappings.Last().Id + 1;
-
-                        driveMappings.Add(driveMapping);
-
-                        HttpContext.Session.SetString(sessionName, JsonConvert.SerializeObject(driveMappings.OrderBy(entry => entry.Id)));
-                    }
-                    else
-                    {
-                        List<DriveMappingModel> driveMappings = new List<DriveMappingModel>
-                        {
-                            driveMapping
-                        };
-
-                        HttpContext.Session.SetString(sessionName, JsonConvert.SerializeObject(driveMappings.OrderBy(entry => entry.Id)));
-                    }
-                }
-                else
-                {
-                    return View();
-                }
-
-                return RedirectToAction(indexView);
+                List<DriveMappingModel> driveMappings = JsonConvert.DeserializeObject<List<DriveMappingModel>>(HttpContext.Session.GetString(sessionName));
+                driveMapping.Id = driveMappings.Count + 1;
+                driveMappings.Add(driveMapping);
+                HttpContext.Session.SetString(sessionName, JsonConvert.SerializeObject(driveMappings.OrderBy(entry => entry.Id)));  
             }
 
-            catch (Exception ex)
-            {
-                HttpContext.Session.SetString(errosSession, ex.Message.ToString());
+            return PartialView("_Create", driveMapping);
 
-                return RedirectToAction(indexView);
-
-            }
         }
 
         [HttpPost]
@@ -116,7 +99,6 @@ namespace IntuneDriveMapping.Controllers
             try
             {
                 var file = Request.Form.Files[0];
-
 
                 if (file.FileName.Contains(".ps1"))
                 {
@@ -238,7 +220,8 @@ namespace IntuneDriveMapping.Controllers
                 }
                 else
                 {
-                    return View(driveMappingEntry);
+                    
+                    return PartialView("_Edit", driveMappingEntry);
                 }
             }
 
@@ -259,42 +242,25 @@ namespace IntuneDriveMapping.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    //haven't found better solution: so i just remove the existing entry and add the new one and do a resort of the list
 
                     List<DriveMappingModel> driveMappings = JsonConvert.DeserializeObject<List<DriveMappingModel>>(HttpContext.Session.GetString(sessionName));
-
-                    if (driveMapping.Id == 0)
-                    {
-                        driveMappings.RemoveAt(driveMapping.Id);
-
-                    }
-                    else
-                    {
-                        driveMappings.RemoveAt(driveMapping.Id - 1);
-
-                    }
-
-                    driveMappings.Add(driveMapping);
-
+                    DriveMappingModel selectedItem = driveMappings.Where(dm => dm.Id == driveMapping.Id).First();
+                    driveMappings[driveMappings.IndexOf(selectedItem)] = driveMapping;
                     HttpContext.Session.SetString(sessionName, JsonConvert.SerializeObject(driveMappings.OrderBy(entry => entry.Id)));
                 }
-                else
-                {
-                    return View();
 
-                }
-
-                return RedirectToAction(indexView);
+                 return PartialView("_Edit", driveMapping);
+                
             }
 
             catch (Exception ex)
             {
                 HttpContext.Session.SetString(errosSession, ex.Message.ToString());
-
                 return RedirectToAction(indexView);
             }
         }
 
+        [HttpGet]
         public ActionResult Delete(int? Id)
         {
             try
@@ -310,7 +276,7 @@ namespace IntuneDriveMapping.Controllers
                 }
                 else
                 {
-                    return View(driveMappingEntry);
+                    return PartialView("_Delete", driveMappingEntry);
                 }
             }
             catch (Exception ex)
@@ -377,6 +343,11 @@ namespace IntuneDriveMapping.Controllers
 
                 return RedirectToAction(indexView);
             }
+        }
+
+        public ActionResult Reset()
+        {
+            return PartialView("_Reset");
         }
 
         public ActionResult ResetSession()

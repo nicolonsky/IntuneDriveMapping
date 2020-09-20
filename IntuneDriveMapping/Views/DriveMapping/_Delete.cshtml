@@ -1,0 +1,43 @@
+﻿@model IntuneDriveMapping.Models.DriveMappingModel
+
+
+<div class="modal fade bd-example-modal-lg" tabindex="-1" role="dialog" id="deleteDriveMapping" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Delete entry</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form asp-action="Delete" autocomplete="off">
+                    <div class="form-group d-none">
+                        <label asp-for="Id" class="control-label"></label>
+                        <input asp-for="Id" class="form-control" readonly />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Path" class="control-label"></label>
+                        <input asp-for="Path" class="form-control" readonly />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="DriveLetter" class="control-label"></label>
+                        @Html.DropDownListFor(m => m.DriveLetter, DriveLetter.GetDriveLetters(), new { @class = "form-control disabled", @readonly = "readonly" })
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="Label" class="control-label"></label>
+                        <input asp-for="Label" class="form-control" readonly />
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="GroupFilter" class="control-label"></label>
+                        <input asp-for="GroupFilter" class="form-control" readonly />
+                    </div>
+                    <div class="form-group">
+                        <input type="submit" value="Delete" class="btn btn-outline-danger" />
+                    </div>
+                </form>
+            </div>
+
+        </div>
+    </div>
+</div>
