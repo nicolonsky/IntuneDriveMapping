@@ -1,0 +1,46 @@
+﻿@model IEnumerable<IntuneDriveMapping.Models.DriveMappingModel>
+
+<table class="table mt-4" id="driveMappings" data-url="@Url.Action("Index")">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.DriveLetter)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Path)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Label)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.GroupFilter)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>
+                    @Html.DisplayFor(modelItem => item.DriveLetter)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Path)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.Label)
+                </td>
+                <td>
+                    @Html.DisplayFor(modelItem => item.GroupFilter)
+                </td>
+                <td>
+                    <button class="btn btn-outline-danger" data-toggle="ajax-modal" data-target="#deleteDriveMapping" data-url="@Url.Action("Delete/" + item.Id)">Delete</button>
+
+                    <button class="btn btn-outline-primary" data-toggle="ajax-modal" data-target="#editDriveMapping" data-url="@Url.Action("Edit/" + item.Id)">Edit</button>
+
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

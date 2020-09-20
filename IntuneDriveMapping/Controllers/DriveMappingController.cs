@@ -48,15 +48,21 @@ namespace IntuneDriveMapping.Controllers
             {
                 return View();
             }
-
             else 
             {
                 List<DriveMappingModel> driveMappings = JsonConvert.DeserializeObject<List<DriveMappingModel>>(HttpContext.Session.GetString(sessionName));
-
                 ViewBag.ShowList = true;
+
+                var isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest";
+                if (isAjax)
+                {
+                    return PartialView("_Table", driveMappings);
+                }
 
                 return View(driveMappings);
             }
+
+           
         }
         public ActionResult Create()
         {
@@ -74,37 +80,20 @@ namespace IntuneDriveMapping.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult Create(DriveMappingModel driveMapping)
         {
-            try
+            if (ModelState.IsValid)
             {
-                if (ModelState.IsValid)
-                {
-                    //check if first ever item is addedd or list with entries already exists
-                    if (HttpContext.Session.GetString(sessionName) != null)
-                    {
-                        List<DriveMappingModel> driveMappings = JsonConvert.DeserializeObject<List<DriveMappingModel>>(HttpContext.Session.GetString(sessionName));
 
-                        driveMapping.Id = driveMappings.Count + 1;
+                List<DriveMappingModel> driveMappings = JsonConvert.DeserializeObject<List<DriveMappingModel>>(HttpContext.Session.GetString(sessionName));
 
-                        driveMappings.Add(driveMapping);
+                driveMapping.Id = driveMappings.Count + 1;
 
-                        HttpContext.Session.SetString(sessionName, JsonConvert.SerializeObject(driveMappings.OrderBy(entry => entry.Id)));
-                    }
-                }
-                else
-                {
-                    return PartialView("_Create", driveMapping);
-                }
+                driveMappings.Add(driveMapping);
 
-                return RedirectToAction(indexView);
+                HttpContext.Session.SetString(sessionName, JsonConvert.SerializeObject(driveMappings.OrderBy(entry => entry.Id)));
+                
             }
 
-            catch (Exception ex)
-            {
-                HttpContext.Session.SetString(errosSession, ex.Message.ToString());
-
-                return RedirectToAction(indexView);
-
-            }
+            return PartialView("_Create", driveMapping);
         }
 
         [HttpPost]
@@ -376,6 +365,11 @@ namespace IntuneDriveMapping.Controllers
 
                 return RedirectToAction(indexView);
             }
+        }
+
+        public ActionResult Reset()
+        {
+            return PartialView("_Reset");
         }
 
         public ActionResult ResetSession()
