@@ -82,18 +82,14 @@ namespace IntuneDriveMapping.Controllers
         {
             if (ModelState.IsValid)
             {
-
                 List<DriveMappingModel> driveMappings = JsonConvert.DeserializeObject<List<DriveMappingModel>>(HttpContext.Session.GetString(sessionName));
-
                 driveMapping.Id = driveMappings.Count + 1;
-
                 driveMappings.Add(driveMapping);
-
-                HttpContext.Session.SetString(sessionName, JsonConvert.SerializeObject(driveMappings.OrderBy(entry => entry.Id)));
-                
+                HttpContext.Session.SetString(sessionName, JsonConvert.SerializeObject(driveMappings.OrderBy(entry => entry.Id)));  
             }
 
             return PartialView("_Create", driveMapping);
+
         }
 
         [HttpPost]
@@ -246,38 +242,20 @@ namespace IntuneDriveMapping.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    //haven't found better solution: so i just remove the existing entry and add the new one and do a resort of the list
 
                     List<DriveMappingModel> driveMappings = JsonConvert.DeserializeObject<List<DriveMappingModel>>(HttpContext.Session.GetString(sessionName));
-
-                    if (driveMapping.Id == 0)
-                    {
-                        driveMappings.RemoveAt(driveMapping.Id);
-
-                    }
-                    else
-                    {
-                        driveMappings.RemoveAt(driveMapping.Id - 1);
-
-                    }
-
-                    driveMappings.Add(driveMapping);
-
+                    DriveMappingModel selectedItem = driveMappings.Where(dm => dm.Id == driveMapping.Id).First();
+                    driveMappings[driveMappings.IndexOf(selectedItem)] = driveMapping;
                     HttpContext.Session.SetString(sessionName, JsonConvert.SerializeObject(driveMappings.OrderBy(entry => entry.Id)));
                 }
-                else
-                {
-                    return PartialView("_Edit", driveMapping);
 
-                }
-
-                return RedirectToAction(indexView);
+                 return PartialView("_Edit", driveMapping);
+                
             }
 
             catch (Exception ex)
             {
                 HttpContext.Session.SetString(errosSession, ex.Message.ToString());
-
                 return RedirectToAction(indexView);
             }
         }

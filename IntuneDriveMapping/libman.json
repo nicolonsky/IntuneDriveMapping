@@ -1,5 +1,14 @@
 {
   "version": "1.0",
-  "defaultProvider": "cdnjs",
-  "libraries": []
+  "defaultProvider": "unpkg",
+  "libraries": [
+    {
+      "library": "bootstrap@4.5.2",
+      "destination": "node_modules/bootstrap"
+    },
+    {
+      "library": "jquery@3.5.1",
+      "destination": "node_modules/jquery"
+    }
+  ]
 }

@@ -12,6 +12,7 @@
                 <div class="modal-body">
                     <form asp-action="Edit" autocomplete="off">
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        <input name="IsValid" type="hidden" value="@ViewData.ModelState.IsValid.ToString()" />
                         <div class="form-group d-none">
                             <label asp-for="Id" class="control-label"></label>
                             <input asp-for="Id" class="form-control" readonly />
@@ -37,7 +38,7 @@
                             <span asp-validation-for="GroupFilter" class="text-danger"></span>
                         </div>
                         <div class="form-group">
-                            <input type="submit" value="Save" class="btn btn-outline-primary" />
+                            <input type="submit" value="Save" class="btn btn-outline-primary" data-save="modal" />
                         </div>
                     </form>
                 </div>
