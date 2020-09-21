@@ -1,25 +1,26 @@
 ﻿<!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Intune Drive Mapping Generator</title>
-        <!-- inside <head> -->
-        <link rel="stylesheet" href="~/vendor.min.css" />
-        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css"
-              integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt"
-              crossorigin="anonymous">
-        <!-- Global site tag (gtag.js) - Google Analytics -->
-        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-108122616-3"></script>
-        <script src="~/vendor.min.js"></script>
-        <script src="~/js/site.min.js"></script>
-        <script>
-            window.dataLayer = window.dataLayer || [];
-            function gtag() { dataLayer.push(arguments); }
-            gtag('js', new Date());
-            gtag('config', 'UA-108122616-3', { 'anonymize_ip': true });
-        </script>
-    </head>
+<html lang="en">>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="Description" content="Intune network drive mapping script generator which coverts group policy preferences to an Intune ready PowerShell script">
+    <title>Intune Drive Mapping Generator</title>
+    <!-- inside <head> -->
+    <link rel="stylesheet" href="~/vendor.min.css" />
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.0/css/all.css"
+          integrity="sha384-lKuwvrZot6UHsBSfcMvOkWwlCMgc0TaWr+30HWe3a4ltaBwTZhyTEggF5tJv8tbt"
+          crossorigin="anonymous">
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-108122616-3"></script>
+    <script src="~/vendor.min.js"></script>
+    <script src="~/js/site.min.js"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag() { dataLayer.push(arguments); }
+        gtag('js', new Date());
+        gtag('config', 'UA-108122616-3', { 'anonymize_ip': true });
+    </script>
+</head>
     <body>
         <nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark mb-5">
             <div class="container">
@@ -36,7 +37,7 @@
                     </ul>
                     <ul class="navbar-nav justify-content-end">
                         <li class="nav-item">
-                            <a href="https://github.com/nicolonsky/IntuneDriveMapping/wiki" target="_blank" class="nav-link">
+                            <a href="https://github.com/nicolonsky/IntuneDriveMapping/wiki" target="_blank" class="nav-link" rel="noreferrer">
                                 <i class="fas fa-book"></i>
                                 <span>Documentation</span>
                             </a>
@@ -53,7 +54,7 @@
         <footer class="footer fixed-bottom py-2" style="background-color:#f5f5f5">
             <div class="container">
                 <span class="">Version: <span class="badge badge-secondary">@typeof(IntuneDriveMapping.Program).Assembly.GetName().Version</span></span>
-                <span class="float-right">Presented by <a href="https://tech.nicolonsky.ch/" target="_blank">Nicola Suter</a></span>
+                <span class="float-right">Presented by <a href="https://tech.nicolonsky.ch/" rel="noreferrer" target="_blank">Nicola Suter</a></span>
             </div>
         </footer>
     </body>
