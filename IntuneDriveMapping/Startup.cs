@@ -1,16 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using IntuneDriveMapping.Helpers;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.EntityFrameworkCore;
-using IntuneDriveMapping.Models;
 
 namespace IntuneDriveMapping
 {
@@ -33,6 +28,9 @@ namespace IntuneDriveMapping
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
+            // Dependency injection to access HTTP context
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddScoped<Helpers.IDriveMappingStore, DriveMappingStore>();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
 
