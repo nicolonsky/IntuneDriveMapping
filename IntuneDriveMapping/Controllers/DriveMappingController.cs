@@ -12,11 +12,7 @@ using IntuneDriveMapping.Helpers;
 namespace IntuneDriveMapping.Controllers
 {
     public class DriveMappingController : Controller
-    {
-        //Http session configs
-        const string sessionName = "driveMappingList";
-        const string errosSession = "lastError";
-
+    {   
         //Configuration params for the generated PowerShell script
         const string poshInsertString = "!INTUNEDRIVEMAPPINGJSON!";
         const string poshTemplateName = "IntuneDriveMappingTemplate.ps1";
@@ -37,21 +33,18 @@ namespace IntuneDriveMapping.Controllers
 
         public ActionResult Index()
         {
-
             //don't display any table data if no content is available
             ViewBag.ShowList = false;
 
             //check if error message is stored in session & forward to view
-            if (HttpContext.Session.GetString(errosSession) != null)
+            string error = _driveMappingStore.GetErrorMessage();
+            if (!string.IsNullOrEmpty(error))
             {
-                ViewBag.Error = HttpContext.Session.GetString(errosSession);
-
-                //clear session after returned to view
-                HttpContext.Session.Remove(errosSession);
+                ViewBag.Error = error;
             }
 
             //check if a drivemapping list exists and display it
-            if (HttpContext.Session.GetString(sessionName)==null)
+            if (!_driveMappingStore.GetDriveMappings().Any())
             {
                 return View();
             }
@@ -77,7 +70,17 @@ namespace IntuneDriveMapping.Controllers
 
         public ActionResult Init()
         {
-            _driveMappingStore.SetDriveMappings(new List<DriveMappingModel>());
+            List<DriveMappingModel> driveMappings = new List<DriveMappingModel>();
+            DriveMappingModel driveMappingModel = new DriveMappingModel
+            {
+                DriveLetter = "A",
+                Label = "Example",
+                Path = "\\\\path\\to\\your\\share",
+                GroupFilter = "exampleGroupSamAccountName"
+            };
+
+            driveMappings.Add(driveMappingModel);
+            _driveMappingStore.SetDriveMappings(driveMappings);
             return RedirectToAction(indexView);
         }
 
@@ -125,7 +128,7 @@ namespace IntuneDriveMapping.Controllers
             }
             catch (Exception ex)
             {
-                HttpContext.Session.SetString(errosSession, ex.Message.ToString());
+                _driveMappingStore.SetErrorMessage(ex);
                 return RedirectToAction(indexView);
             }
         }
@@ -150,7 +153,7 @@ namespace IntuneDriveMapping.Controllers
 
             catch (Exception ex)
             {
-                HttpContext.Session.SetString(errosSession,ex.Message.ToString());
+                _driveMappingStore.SetErrorMessage(ex);
                 return RedirectToAction(indexView);
             }
         }
@@ -174,7 +177,7 @@ namespace IntuneDriveMapping.Controllers
 
             catch (Exception ex)
             {
-                HttpContext.Session.SetString(errosSession, ex.Message.ToString());
+                _driveMappingStore.SetErrorMessage(ex);
                 return RedirectToAction(indexView);
             }
         }
@@ -199,7 +202,7 @@ namespace IntuneDriveMapping.Controllers
             }
             catch (Exception ex)
             {
-                HttpContext.Session.SetString(errosSession, ex.Message.ToString());
+                _driveMappingStore.SetErrorMessage(ex);
                 return RedirectToAction(indexView);
             }
         }
@@ -222,7 +225,7 @@ namespace IntuneDriveMapping.Controllers
             }
             catch (Exception ex)
             {
-                HttpContext.Session.SetString(errosSession, ex.StackTrace.ToString());
+                _driveMappingStore.SetErrorMessage(ex);
                 return RedirectToAction(indexView);
             }
         }
@@ -232,7 +235,7 @@ namespace IntuneDriveMapping.Controllers
         {
             try
             {
-                if (HttpContext.Session.GetString(sessionName)!=null)
+                if (_driveMappingStore.GetDriveMappings().Any())
                 {
                     //load the PowerShell template and replace values with generated configuration
 
@@ -257,7 +260,7 @@ namespace IntuneDriveMapping.Controllers
             }
             catch (Exception ex)
             {
-                HttpContext.Session.SetString(errosSession, ex.Message.ToString());
+                _driveMappingStore.SetErrorMessage(ex);
                 return RedirectToAction(indexView);
             }
         }
@@ -276,7 +279,7 @@ namespace IntuneDriveMapping.Controllers
             }
             catch (Exception ex)
             {
-                HttpContext.Session.SetString(errosSession, ex.Message.ToString());
+                _driveMappingStore.SetErrorMessage(ex);
                 return RedirectToAction(indexView);
             }
         }
