@@ -12,19 +12,23 @@ public class DriveMappingStore : IntuneDriveMapping.Helpers.IDriveMappingStore
     private readonly string sessionName = "driveMappingList";
     private readonly string errosSession = "lastError";
 
+    const string poshInsertString = "!INTUNEDRIVEMAPPINGJSON!";
+    const string poshTemplateName = "IntuneDriveMappingTemplate.ps1";
+    const string poshremoveStaleDrives = "$removeStaleDrives = $false";
+
     public DriveMappingStore(IHttpContextAccessor httpContextAccessor)
     {
         _httpContextAccessor = httpContextAccessor;
     }
 
-    public List<DriveMappingModel> GetDriveMappings ()
+    public List<DriveMapping> GetDriveMappings ()
     {
-        List<DriveMappingModel> driveMappings = new List<DriveMappingModel>();
+        List<DriveMapping> driveMappings = new List<DriveMapping>();
         string configuration = _httpContextAccessor.HttpContext.Session.GetString(sessionName);
         
         try
         {
-            JsonConvert.DeserializeObject<List<DriveMappingModel>>(configuration).ForEach(
+            JsonConvert.DeserializeObject<List<DriveMapping>>(configuration).ForEach(
                 entry => driveMappings.Add(entry)
             );
         }
@@ -36,7 +40,24 @@ public class DriveMappingStore : IntuneDriveMapping.Helpers.IDriveMappingStore
         return driveMappings;
     }
 
-    public void SetDriveMappings(List<DriveMappingModel> driveMappings)
+
+    public string GetPowerShell (bool removeStaleDrives)
+    {
+        string poshTemplate = System.IO.File.ReadAllText(@"wwwroot/bin/" + poshTemplateName);
+
+        string jsonConfig = JsonConvert.SerializeObject(GetDriveMappings());
+
+        poshTemplate = poshTemplate.Replace(poshInsertString, jsonConfig);
+
+        if (removeStaleDrives)
+        {
+            poshTemplate = poshTemplate.Replace(poshremoveStaleDrives, poshremoveStaleDrives.Replace("false", "true"));
+        }
+
+        return poshTemplate;
+    }
+
+    public void SetDriveMappings(List<DriveMapping> driveMappings)
     {
          driveMappings.OrderBy(entry => entry.Id);
         _httpContextAccessor.HttpContext.Session.SetString(sessionName, JsonConvert.SerializeObject(driveMappings));

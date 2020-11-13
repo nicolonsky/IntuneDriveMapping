@@ -2,7 +2,7 @@
 
 namespace IntuneDriveMapping.Models
 {
-    public class DriveMappingModel
+    public class DriveMapping
     {
         [Display(Name ="UNC Path")]
         [Required]

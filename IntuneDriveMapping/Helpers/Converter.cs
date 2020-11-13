@@ -11,17 +11,19 @@ namespace IntuneDriveMapping.Helpers
 {
     public static class Converter
     {
+        static readonly string poshConfigVariable = "$driveMappingJson =";
+
         /// <summary>
         /// Helper method to convert a group policy preference to a drive mapping model entity
         /// </summary>
         /// <param name="xml"></param>
         /// <returns>List<DriveMappingModel></returns> 
-        public static List<DriveMappingModel> ConvertToDriveMappingList (IFormFile xml)
+        public static List<DriveMapping> ConvertToDriveMappingList (Stream xml)
         {
             // create xmldoc
             XmlDocument xmldoc = new XmlDocument();
 
-            xmldoc.Load(xml.OpenReadStream());
+            xmldoc.Load(xml);
 
             //namespace manager & URI's needed in order to read GPP nodes
             XmlNamespaceManager nsmanager = new XmlNamespaceManager(xmldoc.NameTable);
@@ -32,9 +34,9 @@ namespace IntuneDriveMapping.Helpers
             XmlNodeList driveProperties = xmldoc.SelectNodes("q1:GPO/q1:User/q1:ExtensionData/q1:Extension/q2:DriveMapSettings/q2:Drive", nsmanager);
 
             //create list to store all entries
-            List<DriveMappingModel> driveMappings = new List<DriveMappingModel>();
+            List<DriveMapping> driveMappings = new List<DriveMapping>();
 
-            DriveMappingModel driveMapping;
+            DriveMapping driveMapping;
 
             //helper index to assign id to our entries 
             int i = 0;
@@ -42,7 +44,7 @@ namespace IntuneDriveMapping.Helpers
             foreach (XmlNode property in driveProperties)
             {
                 //the real drive mapping configuration is stored in the 2nd XML child-node --> index 1
-                driveMapping = new DriveMappingModel
+                driveMapping = new DriveMapping
                 {
                     Path = property.ChildNodes[1].Attributes["path"].InnerXml,
                     DriveLetter = property.ChildNodes[1].Attributes["letter"].InnerXml,
@@ -76,13 +78,13 @@ namespace IntuneDriveMapping.Helpers
         /// <param name="powershell"></param>
         /// <param name="poshConfigVariable"></param>
         /// <returns>List<DriveMappingModel></returns>
-        public static List<DriveMappingModel> ParsePowerShellConfiguration (IFormFile powershell, string poshConfigVariable)
+        public static List<DriveMapping> ParsePowerShellConfiguration (Stream powershell)
         {
             string driveMappingConfig = null;
             string line;
 
             // Read first few lines from PowerShell scripts until json configuration section
-            using (StreamReader reader = new StreamReader(powershell.OpenReadStream()))
+            using (StreamReader reader = new StreamReader(powershell))
             {
                 line = reader.ReadLine();
 
@@ -99,7 +101,7 @@ namespace IntuneDriveMapping.Helpers
                     driveMappingConfig = driveMappingConfig.TrimEnd('\'');
                 }
 
-                return JsonConvert.DeserializeObject<List<DriveMappingModel>>(driveMappingConfig);
+                return JsonConvert.DeserializeObject<List<DriveMapping>>(driveMappingConfig);
             }
         }
     }

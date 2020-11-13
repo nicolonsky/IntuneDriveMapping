@@ -13,12 +13,8 @@ namespace IntuneDriveMapping.Controllers
 {
     public class DriveMappingController : Controller
     {   
-        //Configuration params for the generated PowerShell script
-        const string poshInsertString = "!INTUNEDRIVEMAPPINGJSON!";
-        const string poshTemplateName = "IntuneDriveMappingTemplate.ps1";
+        //Returned file name as download
         const string poshExportName = "DriveMapping.ps1";
-        const string poshConfigVariable = "$driveMappingJson =";
-        const string poshremoveStaleDrives = "$removeStaleDrives = $false";
 
         //default view where everything comes together
         const string indexView = "Index";
@@ -50,7 +46,7 @@ namespace IntuneDriveMapping.Controllers
             }
             else 
             {
-                List<DriveMappingModel> driveMappings = _driveMappingStore.GetDriveMappings();
+                List<DriveMapping> driveMappings = _driveMappingStore.GetDriveMappings();
                 ViewBag.ShowList = true;
 
                 var isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest";
@@ -70,8 +66,8 @@ namespace IntuneDriveMapping.Controllers
 
         public ActionResult Init()
         {
-            List<DriveMappingModel> driveMappings = new List<DriveMappingModel>();
-            DriveMappingModel driveMappingModel = new DriveMappingModel
+            List<DriveMapping> driveMappings = new List<DriveMapping>();
+            DriveMapping driveMappingModel = new DriveMapping
             {
                 DriveLetter = "A",
                 Label = "Example",
@@ -86,11 +82,11 @@ namespace IntuneDriveMapping.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(DriveMappingModel driveMapping)
+        public ActionResult Create(DriveMapping driveMapping)
         {
             if (ModelState.IsValid)
             {
-                List<DriveMappingModel> driveMappings = _driveMappingStore.GetDriveMappings();
+                List<DriveMapping> driveMappings = _driveMappingStore.GetDriveMappings();
                 driveMapping.Id = driveMappings.Count + 1;
                 driveMappings.Add(driveMapping);
                 _driveMappingStore.SetDriveMappings(driveMappings);
@@ -106,17 +102,17 @@ namespace IntuneDriveMapping.Controllers
             try
             {
                 var file = Request.Form.Files[0];
-                List<DriveMappingModel> driveMappings = new List<DriveMappingModel>();
+                List<DriveMapping> driveMappings = new List<DriveMapping>();
 
                 if (file.FileName.EndsWith(".ps1"))
                 {
                     // Retrieve JSON configuration from PowerShell file
-                    driveMappings = Converter.ParsePowerShellConfiguration(file, poshConfigVariable);    
+                    driveMappings = Converter.ParsePowerShellConfiguration(file.OpenReadStream());    
                 }
                 else if (file.FileName.EndsWith(".xml"))
                 {
                     // Convert XML to drive mapping entity
-                     driveMappings = Converter.ConvertToDriveMappingList(file);
+                     driveMappings = Converter.ConvertToDriveMappingList(file.OpenReadStream());
                 }
                 else
                 {
@@ -137,7 +133,7 @@ namespace IntuneDriveMapping.Controllers
         {
             try
             {
-                List<DriveMappingModel> driveMappings = _driveMappingStore.GetDriveMappings();
+                List<DriveMapping> driveMappings = _driveMappingStore.GetDriveMappings();
                 var driveMappingEntry = driveMappings.Where(s => s.Id == Id).FirstOrDefault();
 
                 //prevent user passing invalid index by url
@@ -160,14 +156,14 @@ namespace IntuneDriveMapping.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(DriveMappingModel driveMapping)
+        public ActionResult Edit(DriveMapping driveMapping)
         {
             try
             {
                 if (ModelState.IsValid)
                 {
-                    List<DriveMappingModel> driveMappings = _driveMappingStore.GetDriveMappings();
-                    DriveMappingModel selectedItem = driveMappings.Where(dm => dm.Id == driveMapping.Id).First();
+                    List<DriveMapping> driveMappings = _driveMappingStore.GetDriveMappings();
+                    DriveMapping selectedItem = driveMappings.Where(dm => dm.Id == driveMapping.Id).First();
                     driveMappings[driveMappings.IndexOf(selectedItem)] = driveMapping;
                     _driveMappingStore.SetDriveMappings(driveMappings);
                 }
@@ -187,7 +183,7 @@ namespace IntuneDriveMapping.Controllers
         {
             try
             {
-                List<DriveMappingModel> driveMappings = _driveMappingStore.GetDriveMappings();
+                List<DriveMapping> driveMappings = _driveMappingStore.GetDriveMappings();
 
                 var driveMappingEntry = driveMappings.Where(s => s.Id == Id).FirstOrDefault();
 
@@ -213,7 +209,7 @@ namespace IntuneDriveMapping.Controllers
         {
             try
             {
-                List<DriveMappingModel> driveMappings = _driveMappingStore.GetDriveMappings();
+                List<DriveMapping> driveMappings = _driveMappingStore.GetDriveMappings();
 
                 var driveMappingEntry = driveMappings.Where(s => s.Id == Id).FirstOrDefault();
 
@@ -238,20 +234,10 @@ namespace IntuneDriveMapping.Controllers
                 if (_driveMappingStore.GetDriveMappings().Any())
                 {
                     //load the PowerShell template and replace values with generated configuration
-
-                    string poshTemplate = System.IO.File.ReadAllText(@"wwwroot/bin/" + poshTemplateName);
-
-                    string jsonConfig = JsonConvert.SerializeObject(_driveMappingStore.GetDriveMappings());
-
-                    poshTemplate = poshTemplate.Replace(poshInsertString, jsonConfig);
-
-                    if (removeStaleDrives)
-                    {
-                        poshTemplate = poshTemplate.Replace(poshremoveStaleDrives, poshremoveStaleDrives.Replace("false","true"));
-                    }
-
+                    string powerShellScript = _driveMappingStore.GetPowerShell(removeStaleDrives);
+                    
                     //return file download
-                    return File(Encoding.UTF8.GetBytes(poshTemplate), "default/text", poshExportName);
+                    return File(Encoding.UTF8.GetBytes(powerShellScript), "default/text", poshExportName);
 
                 }else
                 {

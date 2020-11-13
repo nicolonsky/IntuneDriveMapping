@@ -25,7 +25,7 @@ namespace IntuneDriveMapping.Controllers
         }
 
         [HttpPost]
-        public string GeneratePs (IEnumerable<DriveMappingModel> driveMappings)
+        public string GeneratePs (IEnumerable<DriveMapping> driveMappings)
         {
             string poshTemplate = System.IO.File.ReadAllText(@contentRoot + poshTemplateName);
             poshTemplate =  poshTemplate.Replace(poshInsertString, JsonConvert.SerializeObject(driveMappings));

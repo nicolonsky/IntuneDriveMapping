@@ -6,9 +6,10 @@ namespace IntuneDriveMapping.Helpers
 {
     public interface IDriveMappingStore
     {
-        List<DriveMappingModel> GetDriveMappings();
-        void SetDriveMappings(List<DriveMappingModel> driveMappings);
+        List<DriveMapping> GetDriveMappings();
+        void SetDriveMappings(List<DriveMapping> driveMappings);
         string GetErrorMessage();
         void SetErrorMessage(Exception exception);
+        string GetPowerShell(bool removeStaleDrives);
     }
 }
