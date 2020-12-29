@@ -14,11 +14,37 @@
             <p>Deploy the PowerShell script with Microsoft Intune</p>
         </li>
     </ol>
-    <br />
+
+    <a data-toggle="modal" data-target="#videModal" class="btn btn-dark btn-large">
+        <i class="fa fa-youtube-play"></i>
+        <span>Walkthrough Video by Intune Training</span>
+    </a>
+
     <a href="https://github.com/nicolonsky/IntuneDriveMapping" rel="noreferrer" target="_blank" class="btn btn-dark btn-large">
         <i class="fab fa-github"></i>
         <span>View this project on GitHub</span>
     </a>
+
+    <!-- Modal -->
+    <div class="modal fade bd-example-modal-lg" id="videModal" tabindex="-1" role="dialog" aria-labelledby="videModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="videModalLabel">Walkthrough Video</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>The guys from Intune.Training did an awesome walkthrough video explaining the tool and how to modify the PowerShell script for a VPN based event trigger:</p>
+                    <iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/hHtXFeuHkC4" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 
