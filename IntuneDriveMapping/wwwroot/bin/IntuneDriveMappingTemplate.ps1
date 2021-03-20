@@ -257,7 +257,7 @@ if (Test-RunningAsSystem) {
 		New-Item -ItemType Directory -Path $scriptSavePath -Force
 	}
 
-	$scriptSavePathName = "DriveMappping.ps1"
+	$scriptSavePathName = "DriveMapping.ps1"
 
 	$scriptPath = $(Join-Path -Path $scriptSavePath -ChildPath $scriptSavePathName)
 
