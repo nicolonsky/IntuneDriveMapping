@@ -23,6 +23,16 @@ Start-Transcript -Path $(Join-Path $env:temp "DriveMapping.log")
 $driveMappingJson = '!INTUNEDRIVEMAPPINGJSON!'
 
 $driveMappingConfig = $driveMappingJson | ConvertFrom-Json -ErrorAction Stop
+#used to create an array for groups
+$driveMappingConfig = foreach ($d in $driveMappingConfig) {
+    [PSCustomObject]@{
+        Path        = $($d.Path)
+        DriveLetter = $($d.DriveLetter)
+        Label       = $($d.Label)
+        Id          = $($d.Id)
+        GroupFilter = $($d.GroupFilter -split ",")
+    }
+}
 
 # Override with your Active Directory Domain Name e.g. 'ds.nicolonsky.ch' if you haven't configured the domain name as DHCP option
 $searchRoot = ""
@@ -92,6 +102,37 @@ function Test-RunningAsSystem {
 	}
 }
 
+
+#Testing if groupmembership is given for user
+function Test-GroupMembership {
+    [CmdletBinding()]
+    param (
+        $driveMappingConfig,
+        $groupMemberships
+    )
+    try {
+        $obj = foreach ($d in $driveMappingConfig) {
+            if (-not ([string]::IsNullOrEmpty($($d.GroupFilter)))) {
+                foreach ($filter in $($d.GroupFilter)) {
+                    if ($groupMemberships -contains $filter) {
+                        $d
+                    }
+                    else {
+                        #no match for group
+                    }
+                }
+            }
+            else {
+                $d 
+            }
+        }
+        $obj
+    }
+    catch {
+        Write-Error "Unknown error testing group memberships: $($_.Exception.Message)"
+    }
+}
+
 ###########################################################################################
 # Get current group membership for the group filter capabilities
 ###########################################################################################
@@ -121,7 +162,7 @@ if (-not (Test-RunningAsSystem)) {
 	| Select-Object @{N = "DriveLetter"; E = { $_.Name } }, @{N = "Path"; E = { $_.DisplayRoot } }
 
 	# only map drives where group membership applicable
-	$driveMappingConfig = $driveMappingConfig | Where-Object { $groupMemberships -contains $_.GroupFilter -or $_.GroupFilter -eq $null }
+	$driveMappingConfig = Test-GroupMembership -driveMappingConfig $driveMappingConfig -groupMemberships $groupMemberships
 
 	#iterate through all network drive configuration entries
 	foreach ($drive in $driveMappingConfig) {
@@ -216,7 +257,7 @@ if (Test-RunningAsSystem) {
 		New-Item -ItemType Directory -Path $scriptSavePath -Force
 	}
 
-	$scriptSavePathName = "DriveMappping.ps1"
+	$scriptSavePathName = "DriveMapping.ps1"
 
 	$scriptPath = $(Join-Path -Path $scriptSavePath -ChildPath $scriptSavePathName)
 
