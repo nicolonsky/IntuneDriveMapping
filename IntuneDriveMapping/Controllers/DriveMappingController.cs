@@ -72,7 +72,7 @@ namespace IntuneDriveMapping.Controllers
                 DriveLetter = "A",
                 Label = "Example",
                 Path = "\\\\path\\to\\your\\share",
-                GroupFilter = "exampleGroupSamAccountName"
+                GroupFilter = "exampleGroupSamAccountName,exampleGroup2SamAccountName"
             };
 
             driveMappings.Add(driveMappingModel);
