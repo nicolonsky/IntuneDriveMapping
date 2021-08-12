@@ -121,7 +121,25 @@ if (-not (Test-RunningAsSystem)) {
 	| Select-Object @{N = "DriveLetter"; E = { $_.Name } }, @{N = "Path"; E = { $_.DisplayRoot } }
 
 	# only map drives where group membership applicable
-	$driveMappingConfig = $driveMappingConfig | Where-Object { $groupMemberships -contains $_.GroupFilter -or $_.GroupFilter -eq $null }
+	$driveMappingConfigCleaned = @()
+	foreach ($mapping in $driveMappingConfig)
+	{
+		if($mapping.GroupFilter -ne $null -and $mapping.GroupFilter.Contains(","))
+        	{
+			$Agroups = $mapping.GroupFilter.Split(",")
+			$value = Compare-Object -ReferenceObject $Agroups -DifferenceObject $groupMemberships -IncludeEqual -ExcludeDifferent -PassThru
+            		if($value.Count -gt 0)
+            		{
+				$driveMappingConfigCleaned += $mapping
+			}
+		} else {
+			if ($groupMemberships -contains $mapping.GroupFilter -or $mapping.GroupFilter -eq $null)
+			{
+				$driveMappingConfigCleaned += $mapping
+			}
+		}
+	}
+	$driveMappingConfig = $driveMappingConfigCleaned
 
 	#iterate through all network drive configuration entries
 	foreach ($drive in $driveMappingConfig) {
