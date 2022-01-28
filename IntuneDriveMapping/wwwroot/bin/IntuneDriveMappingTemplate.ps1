@@ -23,6 +23,16 @@ Start-Transcript -Path $(Join-Path $env:temp "DriveMapping.log")
 $driveMappingJson = '!INTUNEDRIVEMAPPINGJSON!'
 
 $driveMappingConfig = $driveMappingJson | ConvertFrom-Json -ErrorAction Stop
+#used to create an array for groups
+$driveMappingConfig = foreach ($d in $driveMappingConfig) {
+    [PSCustomObject]@{
+        Path        = $($d.Path)
+        DriveLetter = $($d.DriveLetter)
+        Label       = $($d.Label)
+        Id          = $($d.Id)
+        GroupFilter = $($d.GroupFilter -split ",")
+    }
+}
 
 # Override with your Active Directory Domain Name e.g. 'ds.nicolonsky.ch' if you haven't configured the domain name as DHCP option
 $searchRoot = ""
@@ -90,6 +100,37 @@ function Test-RunningAsSystem {
 	process {
 		return [bool]($(whoami -user) -match "S-1-5-18")
 	}
+}
+
+
+#Testing if groupmembership is given for user
+function Test-GroupMembership {
+    [CmdletBinding()]
+    param (
+        $driveMappingConfig,
+        $groupMemberships
+    )
+    try {
+        $obj = foreach ($d in $driveMappingConfig) {
+            if (-not ([string]::IsNullOrEmpty($($d.GroupFilter)))) {
+                foreach ($filter in $($d.GroupFilter)) {
+                    if ($groupMemberships -contains $filter) {
+                        $d
+                    }
+                    else {
+                        #no match for group
+                    }
+                }
+            }
+            else {
+                $d 
+            }
+        }
+        $obj
+    }
+    catch {
+        Write-Error "Unknown error testing group memberships: $($_.Exception.Message)"
+    }
 }
 
 ###########################################################################################
@@ -234,7 +275,7 @@ if (Test-RunningAsSystem) {
 		New-Item -ItemType Directory -Path $scriptSavePath -Force
 	}
 
-	$scriptSavePathName = "DriveMappping.ps1"
+	$scriptSavePathName = "DriveMapping.ps1"
 
 	$scriptPath = $(Join-Path -Path $scriptSavePath -ChildPath $scriptSavePathName)
 
