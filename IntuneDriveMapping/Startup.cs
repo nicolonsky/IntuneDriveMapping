@@ -1,7 +1,7 @@
 ﻿using System;
 using IntuneDriveMapping.Helpers;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -32,19 +32,22 @@ namespace IntuneDriveMapping
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddScoped<Helpers.IDriveMappingStore, DriveMappingStore>();
 
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_1);
-
             //Session configuration
             services.AddDistributedMemoryCache();
 
-            services.AddSession(options => {
+            services.AddControllers();
+
+            services.AddControllersWithViews();
+
+            services.AddSession(options =>
+            {
                 options.IdleTimeout = TimeSpan.FromMinutes(5);//You can set Time   
                 options.Cookie.IsEssential = true; // make the session cookie Essential
             });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -63,11 +66,12 @@ namespace IntuneDriveMapping
             //implement session
             app.UseSession();
 
-            app.UseMvc(routes =>
-            {
-                routes.MapRoute("default", "{controller=Home}/{action=Index}/{id?}");
-            });
+            app.UseRouting();
 
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}");
+            });
         }
     }
 }
