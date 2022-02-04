@@ -24,7 +24,7 @@ jobs:
       run: dotnet test --no-restore --verbosity normal
     - name: dotnet publish
       run: |
-        dotnet publish -c Release -o dotnetcorewebapp 
+        dotnet publish -c Release -o dotnetcorewebapp /p:Version=${{ github.event.release.tag_name }}
     - name: 'Deploy to Azure WebApp'
       uses: azure/webapps-deploy@v2
       with:
