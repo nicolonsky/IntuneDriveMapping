@@ -1,8 +1,8 @@
 name: .NET Core
 
 on:
-  push:
-    branches: [ master ]
+  release:
+    types: [published]
 
 env:
   AZURE_WEBAPP_NAME: intunedrivemapping
@@ -19,7 +19,7 @@ jobs:
     - name: Install dependencies
       run: dotnet restore
     - name: Build
-      run: dotnet build --configuration Release --no-restore /p:Version=1.8.0
+      run: dotnet build --configuration Release --no-restore /p:Version=${{ github.event.release.tag_name }}
     - name: Test
       run: dotnet test --no-restore --verbosity normal
     - name: dotnet publish

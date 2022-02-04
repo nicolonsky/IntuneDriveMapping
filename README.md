@@ -1,6 +1,6 @@
 # Intune network drive mapping generator
 
-[![Build Status](https://dev.azure.com/nicolonsky/ModernWorkplaceTools/_apis/build/status/IntuneDriveMapping?branchName=master)](https://dev.azure.com/nicolonsky/ModernWorkplaceTools/_build/latest?definitionId=14&branchName=master)
+[![.NET Core](https://github.com/nicolonsky/IntuneDriveMapping/actions/workflows/deploy-azure-appservice.yml/badge.svg?branch=master)](https://github.com/nicolonsky/IntuneDriveMapping/actions/workflows/deploy-azure-appservice.yml)
 
 * Generate Intune PowerShell scripts to map network drives on Azure AD joined devices
 * Seamlessly migrate existing network drive mapping group policies
